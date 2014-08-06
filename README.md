@@ -9,7 +9,7 @@ Easy, rich and fully validated [koa](http://koajs.com) routing.
 - built in input validation using [joi](https://github.com/hapijs/joi)
 - built in body parsing using [co-body](https://github.com/visionmedia/co-body) and [co-busboy](https://github.com/cojs/busboy)
 - built on [koa-router](https://github.com/alexmingoia/koa-router)
-- exposed route definitions for later analysis
+- [exposed route definitions](#routes) for later analysis
 - configurable
 - string paths
 - regexp paths
@@ -105,6 +105,84 @@ public.route({
   - `failure`: optional HTTP response code to use when validation fails. defaults to `400`.
 - `handler`: GeneratorFunction
 - `meta`: optional meta data about this route.
+
+### ctx.request additions
+
+When using `validate.type`, `koa-joi-router` adds a few new properties
+to `ctx.request` to faciliate input validation.
+
+##### json
+When the input type is set to `json`, providing the input passes validation,
+`ctx.request.body` will be set to the parsed input.
+
+```js
+admin.route({
+  method: 'post'
+, path: '/blog'
+, validate: { type: 'json' }
+, handler: function *(){
+    console.log(this.request.body) // the incoming json as an object
+  }
+})
+```
+
+##### form
+
+When the input type is set to `form`, providing the input passes validation,
+`ctx.request.body` will be set to the parsed input.
+
+```js
+admin.route({
+  method: 'post'
+, path: '/blog'
+, validate: { type: 'form' }
+, handler: function *(){
+    console.log(this.request.body) // the incoming form as an object
+  }
+})
+```
+
+##### multipart
+
+When the input type is set to `multipart`, providing the input passes validation,
+`ctx.request.parts` will be set to a [co-busboy](https://github.com/cojs/busboy)
+object.
+
+```js
+admin.route({
+  method: 'post'
+, path: '/blog'
+, validate: { type: 'multipart' }
+, handler: function *(){
+    var parts = yield this.request.parts
+    var part
+
+    while (part = yield parts) {
+      // do something with the incoming part stream
+      part.pipe(someOtherStream)
+    }
+
+    console.log(parts.field.name) // form data
+  }
+})
+```
+
+##### non-validated input
+
+_Note:_ if you do not specify a value for `validate.type` then the
+incoming body will not be parsed or validated. It is up to you to
+parse the incoming data however you see fit.
+
+```js
+admin.route({
+  method: 'post'
+, path: '/blog'
+, validate: { }
+, handler: function *(){
+    console.log(this.request.body, this.request.parts) // undefined undefined
+  }
+})
+```
 
 #### .routes
 
