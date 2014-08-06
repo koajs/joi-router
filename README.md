@@ -1,6 +1,6 @@
 #koa-joi-router
 
-Easy, rich and fully validated koa routing.
+Easy, rich and fully validated [koa](http://koajs.com) routing.
 
 #### TODO BADGES (travis-ci, coveralls)
 
