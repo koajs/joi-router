@@ -160,6 +160,10 @@ admin.del('/thing', config, middleware, handler)
 
 ### HTTP 405 and 501 support
 
+### Tests
+
+To run the tests, clone this repo, navigate to this project and run `make test` or `make test-cov`.
+
 ## Sponsored by
 
 [Pebble Technology!](https://getpebble.com)
