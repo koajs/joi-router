@@ -1,8 +1,9 @@
 {
   "name": "koa-joi-router",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Configurable, input validated routing for koa.",
   "main": "joi-router.js",
+  "keywords": ["joi","koa","router","validate","validator","validation"],
   "scripts": {
     "test": "make test"
   },
