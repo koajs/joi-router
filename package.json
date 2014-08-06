@@ -1,0 +1,39 @@
+{
+  "name": "koa-joi-router",
+  "version": "0.0.0",
+  "description": "Configurable, input validated routing for koa.",
+  "main": "joi-router.js",
+  "scripts": {
+    "test": "make test"
+  },
+  "engines": {
+    "node": ">= 0.11.4"
+  },
+  "author": "Aaron Heckmann <aaron.heckmann+github@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pebble/koa-joi-router.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pebble/koa-joi-router/issues"
+  },
+  "homepage": "https://github.com/pebble/koa-joi-router",
+  "dependencies": {
+    "co-body": "1.0.0",
+    "co-busboy": "1.0.2",
+    "debug": "1.0.4",
+    "flatten": "0.0.1",
+    "is-gen-fn": "0.0.1",
+    "joi": "4.6.1",
+    "koa-router": "3.2.3",
+    "methods": "1.1.0",
+    "sliced": "0.0.5"
+  },
+  "devDependencies": {
+    "koa": "^0.8.1",
+    "istanbul-harmony": "^0.2.9",
+    "mocha": "^1.20.1",
+    "supertest": "^0.13.0"
+  }
+}
