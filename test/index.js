@@ -115,6 +115,23 @@ describe('koa-joi-router', function() {
           done();
         });
       });
+
+      describe('path',function() {
+        it('can be a string or regexp', function(done) {
+          var r = router();
+          var fn = function*(){}
+
+          assert.doesNotThrow(function(){
+            r.get('/', fn)
+          })
+
+          assert.doesNotThrow(function(){
+            r.get(/\asdf/i, fn)
+          })
+
+          done();
+        });
+      })
     });
 
     it('adds routes to the routes array', function(done) {
