@@ -2,6 +2,8 @@
 
 Easy, rich and fully validated [koa](http://koajs.com) routing.
 
+[![Build Status](https://travis-ci.org/pebble/koa-joi-router.svg?branch=master)](https://travis-ci.org/pebble/koa-joi-router)
+
 #### Features:
 
 - built in input validation using [joi](https://github.com/hapijs/joi)
