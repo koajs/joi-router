@@ -12,4 +12,13 @@ test-cov:
 open-cov:
 	open coverage/lcov-report/index.html
 
-.PHONY: test test-cov open-cov
+test-travis:
+	@NODE_ENV=test node --harmony-generators \
+		node_modules/.bin/istanbul cover \
+		./node_modules/.bin/_mocha \
+		--report lcovonly \
+		-- -u exports \
+		--bail \
+		-A
+
+.PHONY: test test-cov open-cov test-travis
