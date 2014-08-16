@@ -93,18 +93,19 @@ public.route({
 
 ##### options
 
-- `method`: HTTP method like "get", "post", "put", etc
-- `path`: either a string or `RegExp`
+- `method`: **required** HTTP method like "get", "post", "put", etc
+- `path`: **required** either a string or `RegExp`
 - `validate`
-  - `headers`: optional object which conforms to [joi](https://github.com/hapijs/joi) validation
-  - `query`: optional object which conforms to [joi](https://github.com/hapijs/joi) validation
-  - `params`: optional object which conforms to [joi](https://github.com/hapijs/joi) validation
-  - `body`: optional object which conforms to [joi](https://github.com/hapijs/joi) validation
+  - `headers`: object which conforms to [joi](https://github.com/hapijs/joi) validation
+  - `query`: object which conforms to [joi](https://github.com/hapijs/joi) validation
+  - `params`: object which conforms to [joi](https://github.com/hapijs/joi) validation
+  - `body`: object which conforms to [joi](https://github.com/hapijs/joi) validation
   - `maxBody`:
-  - `type`: if validating the request body, this is required. either `form`, `json` or `multipart`
-  - `failure`: optional HTTP response code to use when validation fails. defaults to `400`.
-- `handler`: GeneratorFunction
-- `meta`: optional meta data about this route.
+  - `output`: output validator object which conforms to [joi](https://github.com/hapijs/joi) validation
+  - `type`: if validating the request body, this is **required**. either `form`, `json` or `multipart`
+  - `failure`: HTTP response code to use when validation fails. defaults to `400`.
+- `handler`: **required** GeneratorFunction
+- `meta`: meta data about this route.
 
 ### ctx.request additions
 

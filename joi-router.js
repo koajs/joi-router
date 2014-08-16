@@ -237,11 +237,15 @@ function makeValidator(spec) {
     for (var i = 0; i < props.length; ++i) {
       var prop = props[i];
       if (spec.validate[prop]) {
-        yield validate(prop, this.request, spec.validate);
+        yield validateInput(prop, this.request, spec.validate);
       }
     }
 
     yield next;
+
+    if (spec.validate.output) {
+      yield validateOutput(spec);
+    }
   }
 }
 
@@ -277,7 +281,7 @@ function toObject(arr) {
 };
 
 /**
- * Creates a validation thunk for the given
+ * Creates an input validation thunk for the given
  * request data.
  *
  * @param {String} prop
@@ -286,7 +290,7 @@ function toObject(arr) {
  * @api private
  */
 
-function validate(prop, request, validate) {
+function validateInput(prop, request, validate) {
   return function(cb) {
     debug('validating %s', prop);
 
@@ -298,6 +302,31 @@ function validate(prop, request, validate) {
 
       // update our request w/ the casted values
       request[prop] = val;
+      cb();
+    });
+  }
+}
+
+/**
+ * Creates an output validation thunk for response body.
+ *
+ * @param {Object} spec
+ * @api private
+ */
+
+function validateOutput(spec) {
+  return function(cb) {
+    debug('validating output');
+    var ctx = this;
+
+    Joi.validate(ctx.body, spec.validate.output, function(err, val) {
+      if (err) {
+        err.status = 500;
+        return cb(err);
+      }
+
+      // update our request w/ the casted values
+      ctx.body = val;
       cb();
     });
   }

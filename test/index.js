@@ -687,6 +687,70 @@ describe('koa-joi-router', function() {
       });
     });
 
+    describe('of output', function() {
+      describe('when body is', function() {
+
+        describe('valid', function() {
+          var r = router();
+
+          r.route({
+            method: 'post'
+          , path: '/a/b'
+          , validate: {
+              output: Joi.number().max(10).required()
+            }
+          , handler: function*(){ this.body = "3" }
+          });
+
+          var app = koa();
+          app.use(r.middleware());
+
+          it('responds with the response body', function(done) {
+            test(app).post('/a/b').expect("3").expect(200, done);
+          });
+        });
+
+        describe('missing', function() {
+          var r = router();
+
+          r.route({
+            method: 'post'
+          , path: '/a/b'
+          , validate: {
+              output: Joi.number().max(10).required()
+            }
+          , handler: function*(){ this.status = 204 }
+          });
+
+          var app = koa();
+          app.use(r.middleware());
+
+          it('responds with a 500', function(done) {
+            test(app).post('/a/b').expect(500, done);
+          });
+        });
+
+        describe('invalid', function() {
+          var r = router();
+
+          r.route({
+            method: 'post'
+          , path: '/a/b'
+          , validate: {
+              output: Joi.object({ y: Joi.string().min(3) })
+            }
+          , handler: function*(){ this.body = { x: 'hi', y: "asdf" }}
+          });
+
+          var app = koa();
+          app.use(r.middleware());
+          it('responds with a 500', function(done) {
+            test(app).post('/a/b').expect(500, done);
+          });
+        });
+      });
+    });
+
     describe('with multiple methods', function() {
       describe('and multiple middleware', function() {
         it('works', function(done) {
