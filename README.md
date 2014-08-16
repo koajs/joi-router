@@ -3,6 +3,7 @@
 Easy, rich and fully validated [koa](http://koajs.com) routing.
 
 [![Build Status](https://travis-ci.org/pebble/koa-joi-router.svg?branch=master)](https://travis-ci.org/pebble/koa-joi-router)
+[![Coverage Status](https://img.shields.io/coveralls/pebble/koa-joi-router.svg)](https://coveralls.io/r/pebble/koa-joi-router)
 
 #### Features:
 
