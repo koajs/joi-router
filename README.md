@@ -268,7 +268,8 @@ Because [koa-router](https://github.com/alexmingoia/koa-router) support it, so d
 
 ```js
 var router = require('koa-joi-router')
-router.get(/^\/blog\/\d{4}-\d{2}-\d{2}\/?$/i, function*(){})
+var admin = router()
+admin.get(/^\/blog\/\d{4}-\d{2}-\d{2}\/?$/i, function*(){})
 ```
 
 ### Multiple methods support
@@ -277,7 +278,8 @@ Defining a route for multiple HTTP methods in a single shot is supported.
 
 ```js
 var router = require('koa-joi-router')
-router.route({
+var admin = router()
+admin.route({
   path: '/',
   method: ['POST', 'PUT'],
   handler: fn
@@ -291,7 +293,8 @@ single route.
 
 ```js
 var router = require('koa-joi-router')
-router.route({
+var admin = router()
+admin.route({
   path: '/',
   method: ['POST', 'PUT'],
   handler: [ yourMiddleware, yourHandler ]
