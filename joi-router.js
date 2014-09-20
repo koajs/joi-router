@@ -83,7 +83,7 @@ Router.prototype.route = function route(spec) {
   var args = [
       spec.path
     , spec.method
-    , assignParams
+    , prepareRequest
     , bodyParser
     , validator
   ].concat(handlers);
@@ -255,8 +255,10 @@ function makeValidator(spec) {
  * @api private
  */
 
-function* assignParams(next){
+function* prepareRequest(next) {
   this.request.params = toObject(this.params);
+  this.request.valid = true;
+  this.response.valid = true;
   yield next;
 }
 
@@ -296,6 +298,7 @@ function validateInput(prop, request, validate) {
 
     Joi.validate(request[prop], validate[prop], function(err, val) {
       if (err) {
+        request.valid = false;
         err.status = validate.failure;
         return cb(err);
       }
@@ -321,6 +324,7 @@ function validateOutput(spec) {
 
     Joi.validate(ctx.body, spec.validate.output, function(err, val) {
       if (err) {
+        ctx.response.valid = false;
         err.status = 500;
         return cb(err);
       }
