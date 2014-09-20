@@ -123,9 +123,10 @@ public.route({
   - `params`: object which conforms to [joi](https://github.com/hapijs/joi) validation
   - `body`: object which conforms to [joi](https://github.com/hapijs/joi) validation
   - `maxBody`: max incoming body size for forms or json input
-  - `failure`: HTTP response code to use when input validation fails. defaults to `400`
+  - `failure`: HTTP response code to use when input validation fails. default `400`
   - `type`: if validating the request body, this is **required**. either `form`, `json` or `multipart`
   - `output`: output validator object which conforms to [joi](https://github.com/hapijs/joi) validation. if output is invalid, an HTTP 500 is returned
+  - `continueOnError`: if validation fails, this flags determines if `koa-joi-router` should [continue processing](#handling-errors) the middleware stack or stop and respond with an error immediately. useful when you want your route to handle the error response. default `false`
 - `handler`: **required** GeneratorFunction
 - `meta`: meta data about this route. koa-joi-router ignores this but stores it along with all other route data
 
@@ -304,9 +305,46 @@ admin.route({
 })
 ```
 
-### Tests
+### handling errors
 
-To run the tests, clone this repo, navigate to this project and run `make test` or `make test-cov`.
+By default, `koa-joi-router` stops processing the middleware stack when either
+input validation fails. This means your route will not be reached. If
+this isn't what you want, for example, if you're writing a web app which needs
+to respond with custom html describing the errors, set the `validate.continueOnError`
+flag to true. You can find out if validation failed by checking `ctx.invalid`.
+
+```js
+admin.route({
+  method: 'post'
+, path: '/add'
+, validate: {
+    type: 'form'
+  , body: {
+      id: Joi.string().length(10)
+    }
+  , continueOnError: true
+  }
+, handler: function *(){
+    if (this.invalid) {
+      console.log(this.invalid.headers);
+      console.log(this.invalid.query);
+      console.log(this.invalid.params);
+      console.log(this.invalid.body);
+      console.log(this.invalid.type);
+    }
+
+    this.body = yield render('add', { errors: this.invalid });
+  }
+})
+```
+
+### Development
+
+#### running tests
+
+- `make test` runs tests
+- `make test-cov` runs tests + test coverage
+- `make open-cov` opens test coverage results in your browser
 
 ## Sponsored by
 
