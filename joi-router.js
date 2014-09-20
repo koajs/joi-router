@@ -191,33 +191,49 @@ function makeBodyParser(spec) {
   return function* parsePayload(next) {
     if (!(spec.validate && spec.validate.type)) return yield next;
 
-    switch (spec.validate.type) {
-      case 'json':
-        if (!this.request.is('json'))
-          return this.throw(400, 'expected json');
-        var opts = { limit: spec.validate.maxBody };
-        this.request.body = yield parse.json(this, opts);
-        break;
+    try {
+      switch (spec.validate.type) {
+        case 'json':
+          if (!this.request.is('json'))
+            return this.throw(400, 'expected json');
+          var opts = { limit: spec.validate.maxBody };
+          this.request.body = yield parse.json(this, opts);
+          break;
 
-      case 'form':
-        if (!this.request.is('urlencoded'))
-          return this.throw(400, 'expected x-www-form-urlencoded');
-        var opts = { limit: spec.validate.maxBody };
-        this.request.body = yield parse.form(this, opts);
-        break;
+        case 'form':
+          if (!this.request.is('urlencoded'))
+            return this.throw(400, 'expected x-www-form-urlencoded');
+          var opts = { limit: spec.validate.maxBody };
+          this.request.body = yield parse.form(this, opts);
+          break;
 
-      case 'stream':
-      case 'multipart':
-        if (!this.request.is('multipart/*'))
-          return this.throw(400, 'expected multipart');
-        var opts = spec.validate.multipartOptions || {}; // TODO document this
-        opts.autoFields = true;
-        this.request.parts = busboy(this, opts);
-        break;
+        case 'stream':
+        case 'multipart':
+          if (!this.request.is('multipart/*'))
+            return this.throw(400, 'expected multipart');
+          var opts = spec.validate.multipartOptions || {}; // TODO document this
+          opts.autoFields = true;
+          this.request.parts = busboy(this, opts);
+          break;
+      }
+    } catch (err) {
+      if (!spec.validate.proceed) return this.throw(err);
+      captureError(this, 'type', err);
     }
 
     yield next;
   }
+}
+
+/**
+ * @api private
+ */
+
+function captureError(ctx, type, err) {
+  // expose Error message to JSON.stringify()
+  err.msg = err.message;
+  ctx.invalid || (ctx.invalid = {});
+  ctx.invalid[type] = err;
 }
 
 /**
@@ -237,7 +253,12 @@ function makeValidator(spec) {
     for (var i = 0; i < props.length; ++i) {
       var prop = props[i];
       if (spec.validate[prop]) {
-        yield validateInput(prop, this.request, spec.validate);
+        try {
+          yield validateInput(prop, this.request, spec.validate);
+        } catch (err) {
+          if (!spec.validate.proceed) return this.throw(err);
+          captureError(this, prop, err);
+        }
       }
     }
 
@@ -257,8 +278,6 @@ function makeValidator(spec) {
 
 function* prepareRequest(next) {
   this.request.params = toObject(this.params);
-  this.request.valid = true;
-  this.response.valid = true;
   yield next;
 }
 
@@ -298,7 +317,6 @@ function validateInput(prop, request, validate) {
 
     Joi.validate(request[prop], validate[prop], function(err, val) {
       if (err) {
-        request.valid = false;
         err.status = validate.failure;
         return cb(err);
       }
@@ -324,7 +342,6 @@ function validateOutput(spec) {
 
     Joi.validate(ctx.body, spec.validate.output, function(err, val) {
       if (err) {
-        ctx.response.valid = false;
         err.status = 500;
         return cb(err);
       }

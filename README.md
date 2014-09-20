@@ -17,6 +17,7 @@ Easy, rich and fully validated [koa](http://koajs.com) routing.
 - [regexp path support](#path-regexps)
 - [multiple method support](#multiple-methods-support)
 - [multiple middleware support](#multiple-middleware-support)
+- [continue on error support](#handling-errors)
 - meta data support
 - configurable
 - HTTP 405 and 501 support
@@ -102,6 +103,7 @@ public.route({
   , output: joiObject
   , type: 'form'
   , failure: 400
+  , continueOnError: false
   }
 , handler: function*(){
     yield createUser(this.request.body)

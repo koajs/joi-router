@@ -217,7 +217,7 @@ describe('koa-joi-router', function() {
           });
         });
 
-        describe('and invalid json is sent', function() {
+        describe('and non-json is sent', function() {
           it('fails', function(done) {
             var r = router();
 
@@ -233,8 +233,87 @@ describe('koa-joi-router', function() {
 
             test(app)
             .post('/')
-            .send('{' + JSON.stringify({ last: 'Heckmann', first: 'Aaron' }))
+            .type('form')
+            .send({ name: 'Pebble' })
             .expect(400, done)
+          });
+
+          describe('and validate.proceed is true', function() {
+            it('runs the route and sets ctx.invalid', function(done) {
+              var r = router();
+
+              r.route({
+                  method: 'post'
+                , path: '/'
+                , validate: { type: 'json', proceed: true }
+                , handler: function*(){
+                    this.status = 200;
+                    this.body = this.invalid;
+                  }
+              });
+
+              var app = koa();
+              app.use(r.middleware());
+
+              test(app)
+              .post('/')
+              .type('form')
+              .send({ name: 'Pebble' })
+              .expect(200)
+              .expect('{"type":{"status":400,"expose":true,"msg":"expected json"}}', done)
+            });
+          });
+        });
+
+        describe('and invalid json is sent', function() {
+          var invalid = '{' + JSON.stringify({ name: 'Pebble' });
+
+          it('fails', function(done) {
+            var r = router();
+
+            r.route({
+                method: 'post'
+              , path: '/'
+              , handler: function*(){ this.status = 204 }
+              , validate: { type: 'json' }
+            });
+
+            var app = koa();
+            app.use(r.middleware());
+
+            test(app)
+            .post('/')
+            .type('json')
+            .send(invalid)
+            .expect(400, done)
+          });
+
+          describe('and validate.proceed is true', function() {
+            it('runs the route and sets ctx.invalid', function(done) {
+              var r = router();
+
+              r.route({
+                  method: 'post'
+                , path: '/'
+                , validate: { type: 'json', proceed: true }
+                , handler: function*(){
+                    this.status = 200;
+                    this.body = this.invalid
+                             && this.invalid.type
+                             && this.invalid.type.msg;
+                  }
+              });
+
+              var app = koa();
+              app.use(r.middleware());
+
+              test(app)
+              .post('/')
+              .type('json')
+              .send(invalid)
+              .expect(200)
+              .expect('Unexpected token {', done)
+            });
           });
         });
       });
@@ -268,7 +347,7 @@ describe('koa-joi-router', function() {
           });
         });
 
-        describe('and invalid form data is sent', function() {
+        describe('and non-form data is sent', function() {
           it('fails', function(done) {
             var r = router();
 
@@ -284,9 +363,79 @@ describe('koa-joi-router', function() {
 
             test(app)
             .post('/')
-            .send({ last: 'Heckmann', first: 'Aaron' })
+            .send({ last: 'heckmann', first: 'aaron' })
             .type('json')
             .expect(400, done)
+          });
+
+          describe('and validate.proceed is true', function() {
+            it('runs the route and sets ctx.invalid', function(done) {
+              var r = router();
+
+              r.route({
+                  method: 'post'
+                , path: '/'
+                , validate: { type: 'form', proceed: true }
+                , handler: function*(){
+                    this.status = 200;
+                    this.body = this.invalid;
+                  }
+              });
+
+              var app = koa();
+              app.use(r.middleware());
+
+              test(app)
+              .post('/')
+              .send({ last: 'Heckmann', first: 'Aaron' })
+              .type('json')
+              .expect(200)
+              .expect('{"type":{"status":400,"expose":true,"msg":"expected x-www-form-urlencoded"}}', done)
+            });
+          });
+        });
+
+        describe('and invalid form data is sent', function() {
+          it('fails', function(done) {
+            var r = router();
+
+            r.route({
+                method: 'post'
+              , path: '/'
+              , handler: function*(){ this.status = 204; }
+              , validate: { type: 'form' }
+            });
+
+            var app = koa();
+            app.use(r.middleware());
+
+            test(app)
+            .post('/')
+            .expect(400, done)
+          });
+
+          describe('and validate.proceed is true', function() {
+            it('runs the route and sets ctx.invalid', function(done) {
+              var r = router();
+
+              r.route({
+                  method: 'post'
+                , path: '/'
+                , validate: { type: 'form', proceed: true }
+                , handler: function*(){
+                    this.status = 200;
+                    this.body = this.invalid;
+                  }
+              });
+
+              var app = koa();
+              app.use(r.middleware());
+
+              test(app)
+              .post('/')
+              .expect(200)
+              .expect('{"type":{"status":400,"expose":true,"msg":"expected x-www-form-urlencoded"}}', done)
+            });
           });
         });
       });
@@ -672,6 +821,38 @@ describe('koa-joi-router', function() {
           .send({ quantity: 6, sku: 'x', a: 1 })
           .expect(400, done);
         });
+      });
+
+      describe('when invalid data is submitted', function() {
+        describe('and validate.proceed is true', function() {
+          it('runs the route and sets ctx.invalid', function(done) {
+            var r = router();
+
+            r.route({
+                method: 'post'
+              , path: '/'
+              , validate: {
+                  type: 'json'
+                , proceed: true
+                , body: { name: Joi.string().min(10) }
+                }
+              , handler: function*(){
+                  this.status = 200;
+                  this.body = !! this.invalid;
+                }
+            });
+
+            var app = koa();
+            app.use(r.middleware());
+
+            test(app)
+            .post('/')
+            .send({ name: 'Pebble' })
+            .expect(200)
+            .expect('true', done)
+          });
+        });
+
       });
     });
 
