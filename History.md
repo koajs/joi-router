@@ -1,4 +1,10 @@
 
+1.2.0 / 2014-09-20
+==================
+
+ * added; support for continueOnError
+ * updated; dependencies
+
 1.1.1 / 2014-08-17
 ==================
 
