@@ -248,7 +248,7 @@ describe('koa-joi-router', function() {
                 , validate: { type: 'json', proceed: true }
                 , handler: function*(){
                     this.status = 200;
-                    this.body = this.invalid;
+                    this.body = this.invalid.type.msg
                   }
               });
 
@@ -260,7 +260,7 @@ describe('koa-joi-router', function() {
               .type('form')
               .send({ name: 'Pebble' })
               .expect(200)
-              .expect('{"type":{"status":400,"expose":true,"msg":"expected json"}}', done)
+              .expect('expected json', done)
             });
           });
         });
@@ -378,7 +378,7 @@ describe('koa-joi-router', function() {
                 , validate: { type: 'form', proceed: true }
                 , handler: function*(){
                     this.status = 200;
-                    this.body = this.invalid;
+                    this.body = this.invalid.type.msg;
                   }
               });
 
@@ -390,7 +390,7 @@ describe('koa-joi-router', function() {
               .send({ last: 'Heckmann', first: 'Aaron' })
               .type('json')
               .expect(200)
-              .expect('{"type":{"status":400,"expose":true,"msg":"expected x-www-form-urlencoded"}}', done)
+              .expect('expected x-www-form-urlencoded', done)
             });
           });
         });
@@ -424,7 +424,7 @@ describe('koa-joi-router', function() {
                 , validate: { type: 'form', proceed: true }
                 , handler: function*(){
                     this.status = 200;
-                    this.body = this.invalid;
+                    this.body = this.invalid.type.msg;
                   }
               });
 
@@ -434,7 +434,7 @@ describe('koa-joi-router', function() {
               test(app)
               .post('/')
               .expect(200)
-              .expect('{"type":{"status":400,"expose":true,"msg":"expected x-www-form-urlencoded"}}', done)
+              .expect('expected x-www-form-urlencoded', done)
             });
           });
         });
