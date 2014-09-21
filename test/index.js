@@ -238,14 +238,14 @@ describe('koa-joi-router', function() {
             .expect(400, done)
           });
 
-          describe('and validate.proceed is true', function() {
+          describe('and validate.continueOnError is true', function() {
             it('runs the route and sets ctx.invalid', function(done) {
               var r = router();
 
               r.route({
                   method: 'post'
                 , path: '/'
-                , validate: { type: 'json', proceed: true }
+                , validate: { type: 'json', continueOnError: true }
                 , handler: function*(){
                     this.status = 200;
                     this.body = this.invalid.type.msg
@@ -288,14 +288,14 @@ describe('koa-joi-router', function() {
             .expect(400, done)
           });
 
-          describe('and validate.proceed is true', function() {
+          describe('and validate.continueOnError is true', function() {
             it('runs the route and sets ctx.invalid', function(done) {
               var r = router();
 
               r.route({
                   method: 'post'
                 , path: '/'
-                , validate: { type: 'json', proceed: true }
+                , validate: { type: 'json', continueOnError: true }
                 , handler: function*(){
                     this.status = 200;
                     this.body = this.invalid
@@ -368,14 +368,14 @@ describe('koa-joi-router', function() {
             .expect(400, done)
           });
 
-          describe('and validate.proceed is true', function() {
+          describe('and validate.continueOnError is true', function() {
             it('runs the route and sets ctx.invalid', function(done) {
               var r = router();
 
               r.route({
                   method: 'post'
                 , path: '/'
-                , validate: { type: 'form', proceed: true }
+                , validate: { type: 'form', continueOnError: true }
                 , handler: function*(){
                     this.status = 200;
                     this.body = this.invalid.type.msg;
@@ -414,14 +414,14 @@ describe('koa-joi-router', function() {
             .expect(400, done)
           });
 
-          describe('and validate.proceed is true', function() {
+          describe('and validate.continueOnError is true', function() {
             it('runs the route and sets ctx.invalid', function(done) {
               var r = router();
 
               r.route({
                   method: 'post'
                 , path: '/'
-                , validate: { type: 'form', proceed: true }
+                , validate: { type: 'form', continueOnError: true }
                 , handler: function*(){
                     this.status = 200;
                     this.body = this.invalid.type.msg;
@@ -824,7 +824,7 @@ describe('koa-joi-router', function() {
       });
 
       describe('when invalid data is submitted', function() {
-        describe('and validate.proceed is true', function() {
+        describe('and validate.continueOnError is true', function() {
           it('runs the route and sets ctx.invalid', function(done) {
             var r = router();
 
@@ -833,7 +833,7 @@ describe('koa-joi-router', function() {
               , path: '/'
               , validate: {
                   type: 'json'
-                , proceed: true
+                , continueOnError: true
                 , body: { name: Joi.string().min(10) }
                 }
               , handler: function*(){

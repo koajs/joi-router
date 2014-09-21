@@ -217,7 +217,7 @@ function makeBodyParser(spec) {
           break;
       }
     } catch (err) {
-      if (!spec.validate.proceed) return this.throw(err);
+      if (!spec.validate.continueOnError) return this.throw(err);
       captureError(this, 'type', err);
     }
 
@@ -256,7 +256,7 @@ function makeValidator(spec) {
         try {
           yield validateInput(prop, this.request, spec.validate);
         } catch (err) {
-          if (!spec.validate.proceed) return this.throw(err);
+          if (!spec.validate.continueOnError) return this.throw(err);
           captureError(this, prop, err);
         }
       }
