@@ -189,7 +189,7 @@ function checkValidators(spec){
 
 function makeBodyParser(spec) {
   return function* parsePayload(next) {
-    if (!(spec.validate && spec.validate.type)) return yield next;
+    if (!(spec.validate && spec.validate.type)) return yield* next;
 
     try {
       switch (spec.validate.type) {
@@ -221,7 +221,7 @@ function makeBodyParser(spec) {
       captureError(this, 'type', err);
     }
 
-    yield next;
+    yield* next;
   }
 }
 
@@ -248,7 +248,7 @@ function makeValidator(spec) {
   var props = 'header query params body'.split(' ');
 
   return function* validator(next) {
-    if (!spec.validate) return yield next;
+    if (!spec.validate) return yield* next;
 
     for (var i = 0; i < props.length; ++i) {
       var prop = props[i];
@@ -262,7 +262,7 @@ function makeValidator(spec) {
       }
     }
 
-    yield next;
+    yield* next;
 
     if (spec.validate.output) {
       yield validateOutput(spec);
@@ -278,7 +278,7 @@ function makeValidator(spec) {
 
 function* prepareRequest(next) {
   this.request.params = toObject(this.params);
-  yield next;
+  yield* next;
 }
 
 /**
