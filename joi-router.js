@@ -252,10 +252,11 @@ function makeValidator(spec) {
 
     for (var i = 0; i < props.length; ++i) {
       var prop = props[i];
+
       if (spec.validate[prop]) {
-        try {
-          yield validateInput(prop, this.request, spec.validate);
-        } catch (err) {
+        var err = validateInput(prop, this.request, spec.validate);
+
+        if (err) {
           if (!spec.validate.continueOnError) return this.throw(err);
           captureError(this, prop, err);
         }
@@ -265,7 +266,8 @@ function makeValidator(spec) {
     yield* next;
 
     if (spec.validate.output) {
-      yield validateOutput(spec);
+      var err = validateOutput(this, spec);
+      if (err) return this.throw(err);
     }
   }
 }
@@ -302,55 +304,48 @@ function toObject(arr) {
 };
 
 /**
- * Creates an input validation thunk for the given
- * request data.
+ * Validates request[prop] data with the defined validation schema.
  *
  * @param {String} prop
  * @param {koa.Request} request
  * @param {Object} validate
+ * @returns {Error|undefined}
  * @api private
  */
 
 function validateInput(prop, request, validate) {
-  return function(cb) {
-    debug('validating %s', prop);
+  debug('validating %s', prop);
 
-    Joi.validate(request[prop], validate[prop], function(err, val) {
-      if (err) {
-        err.status = validate.failure;
-        return cb(err);
-      }
+  var res = Joi.validate(request[prop], validate[prop]);
 
-      // update our request w/ the casted values
-      request[prop] = val;
-      cb();
-    });
+  if (res.error) {
+    res.error.status = validate.failure;
+    return res.error;
   }
+
+  // update our request w/ the casted values
+  request[prop] = res.value;
 }
 
 /**
- * Creates an output validation thunk for response body.
+ * Validates output data with the defined validation schema.
  *
+ * @param {koa context} ctx
  * @param {Object} spec
  * @api private
  */
 
-function validateOutput(spec) {
-  return function(cb) {
-    debug('validating output');
-    var ctx = this;
+function validateOutput(ctx, spec) {
+  debug('validating output');
 
-    Joi.validate(ctx.body, spec.validate.output, function(err, val) {
-      if (err) {
-        err.status = 500;
-        return cb(err);
-      }
-
-      // update our request w/ the casted values
-      ctx.body = val;
-      cb();
-    });
+  var res = Joi.validate(ctx.body, spec.validate.output);
+  if (res.error) {
+    res.error.status = 500;
+    return res.error;
   }
+
+  // update request w/ the casted values
+  ctx.body = res.value;
 }
 
 /**
