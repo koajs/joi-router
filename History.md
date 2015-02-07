@@ -1,4 +1,11 @@
 
+1.3.1 / 2015-02-07
+==================
+
+ * fixed header validation documentation
+ * refactor
+ * use yield* next
+
 1.3.0 / 2014-09-20
 ==================
 
