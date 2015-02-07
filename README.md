@@ -95,7 +95,7 @@ public.route({
   method: 'post'
 , path: '/signup'
 , validate: {
-    headers: joiObject
+    header: joiObject
   , query: joiObject
   , params: joiObject
   , body: joiObject
@@ -118,7 +118,7 @@ public.route({
 - `method`: **required** HTTP method like "get", "post", "put", etc
 - `path`: **required** either a string or `RegExp`
 - `validate`
-  - `headers`: object which conforms to [joi](https://github.com/hapijs/joi) validation
+  - `header`: object which conforms to [joi](https://github.com/hapijs/joi) validation
   - `query`: object which conforms to [joi](https://github.com/hapijs/joi) validation
   - `params`: object which conforms to [joi](https://github.com/hapijs/joi) validation
   - `body`: object which conforms to [joi](https://github.com/hapijs/joi) validation
@@ -326,7 +326,7 @@ admin.route({
   }
 , handler: function *(){
     if (this.invalid) {
-      console.log(this.invalid.headers);
+      console.log(this.invalid.header);
       console.log(this.invalid.query);
       console.log(this.invalid.params);
       console.log(this.invalid.body);
