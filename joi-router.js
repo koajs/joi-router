@@ -50,7 +50,7 @@ Router.prototype.middleware = function middleware(){
  *     path: '/do/stuff/:id',
  *     handler: function *(next){},
  *     validate: {
- *       headers: Joi object
+ *       header: Joi object
  *       params: Joi object (:id)
  *       query: Joi object (validate key/val pairs in the querystring)
  *       body: Joi object (the request payload body) (json or form)
