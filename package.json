@@ -26,7 +26,7 @@
     "debug": "1.0.4",
     "flatten": "0.0.1",
     "is-gen-fn": "0.0.1",
-    "joi": "4.7.0",
+    "joi": "6.6.1",
     "koa-router": "3.4.0",
     "methods": "1.1.1",
     "sliced": "1.0.1"
