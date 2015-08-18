@@ -12,6 +12,9 @@ var slice = require('sliced');
 
 module.exports = Router;
 
+// expose Joi for use in applications
+Router.Joi = Joi;
+
 function Router(){
   if (!(this instanceof Router))
     return new Router();

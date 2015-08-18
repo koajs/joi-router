@@ -23,6 +23,11 @@ describe('koa-joi-router', function() {
     done();
   });
 
+  it('exposes the Joi module', function(done) {
+    assert.equal(router.Joi, Joi);
+    done();
+  });
+
   describe('routes', function() {
     it('is an array', function(done) {
       var r = router();
