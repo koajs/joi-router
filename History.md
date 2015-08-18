@@ -1,4 +1,16 @@
 
+2.0.0 / 2015-08-18
+==================
+
+ * bump koa-router to 5.1.2 (RexExp are no longer first class citizens)
+ * bump debug to 2.2.0
+ * bump co-body to 4.0.0
+ * bump joi to 6.6.1
+ * bump busboy, sliced and methods deps
+ * update docs
+ * expose Joi module
+ * support node 0.12 and iojs
+
 1.3.1 / 2015-02-07
 ==================
 
