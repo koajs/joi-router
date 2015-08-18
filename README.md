@@ -25,7 +25,7 @@ Easy, rich and fully validated [koa](http://koajs.com) routing.
 ```js
 var koa = require('koa')
 var router = require('koa-joi-router')
-var Joi = require('joi')
+var Joi = router.Joi
 
 var public = router()
 
@@ -70,9 +70,13 @@ each section of your application which you then add as koa middleware.
 
 ```js
 var router = require('koa-joi-router')
+var Joi = router.Joi
+
 var pub = router()
 var admin = router()
 var auth = router()
+
+// add some routes ..
 
 var app = koa();
 koa.use(pub.middleware())
@@ -80,7 +84,21 @@ koa.use(admin.middleware())
 koa.use(auth.middleware())
 ```
 
-## methods
+## Module properties
+
+### .Joi
+
+It is **RECOMMENDED** you use this bundled version of Joi 
+to avoid bugs related to passing an object created with a different
+relase of Joi into the router.
+
+```js
+var koa = require('koa')
+var router = require('koa-joi-router')
+var Joi = router.Joi
+```
+
+## Router instance methods
 
 ### .route()
 
@@ -130,7 +148,7 @@ public.route({
 - `handler`: **required** GeneratorFunction
 - `meta`: meta data about this route. koa-joi-router ignores this but stores it along with all other route data
 
-### HTTP methods
+### .get(),post(),put(),del() etc - HTTP methods
 
 `koa-joi-router` supports the traditional `router.get()`, `router.post()` type APIs
 as well.
@@ -163,12 +181,21 @@ app.use(public.middleware()) // wired up
 app.listen()
 ```
 
-### ctx.request additions
+## Additions to ctx.request
 
 When using the `validate.type` option, `koa-joi-router` adds a few new properties
 to `ctx.request` to faciliate input validation.
 
-##### json
+### ctx.request.body
+
+The `ctx.request.body` property will be set when either of the following
+`validate.type`s are set:
+
+- json
+- form
+
+#### json
+
 When `validate.type` is set to `json`, the incoming data must be JSON. If it is not,
 validation will fail and the response status will be set to 400 or the value of
 `validate.failure` if specified. If successful, `ctx.request.body` will be set to the
@@ -185,7 +212,7 @@ admin.route({
 })
 ```
 
-##### form
+#### form
 
 When `validate.type` is set to `form`, the incoming data must be form data
 (x-www-form-urlencoded). If it is not, validation will fail and the response
@@ -203,7 +230,14 @@ admin.route({
 })
 ```
 
-##### multipart
+### ctx.request.parts
+
+The `ctx.request.parts` property will be set when either of the following
+`validate.type`s are set:
+
+- multipart
+
+#### multipart
 
 When `validate.type` is set to `multipart`, the incoming data must be multipart data.
 If it is not, validation will fail and the response
@@ -230,10 +264,10 @@ admin.route({
 })
 ```
 
-##### non-validated input
+## Handling non-validated input
 
 _Note:_ if you do not specify a value for `validate.type` then the
-incoming body will not be parsed or validated. It is then up to you to
+incoming payload will not be parsed or validated. It is then up to you to
 parse the incoming data however you see fit.
 
 ```js
@@ -247,7 +281,9 @@ admin.route({
 })
 ```
 
-#### .routes
+## Router instance properties
+
+### .routes
 
 Each router exposes it's route definitions through it's `routes` property.
 This is helpful when you'd like to introspect the previous definitions and
@@ -265,7 +301,7 @@ console.log(admin.routes)
 //     validate: { type: 'multipart' } } ]
 ```
 
-### Path RegExps
+## Path RegExps
 
 Sometime you need a `RegExp` for your route definition.
 Because [koa-router](https://github.com/alexmingoia/koa-router) support it, so do we!
@@ -276,7 +312,7 @@ var admin = router()
 admin.get(/^\/blog\/\d{4}-\d{2}-\d{2}\/?$/i, function*(){})
 ```
 
-### Multiple methods support
+## Multiple methods support
 
 Defining a route for multiple HTTP methods in a single shot is supported.
 
@@ -290,7 +326,7 @@ admin.route({
 })
 ```
 
-### Multiple middleware support
+## Multiple middleware support
 
 Often times you may need to add additional, route specific middleware to a
 single route.
@@ -305,7 +341,7 @@ admin.route({
 })
 ```
 
-### handling errors
+## Handling errors
 
 By default, `koa-joi-router` stops processing the middleware stack when either
 input validation fails. This means your route will not be reached. If
@@ -338,9 +374,9 @@ admin.route({
 })
 ```
 
-### Development
+## Development
 
-#### running tests
+### Running tests
 
 - `make test` runs tests
 - `make test-cov` runs tests + test coverage
@@ -348,7 +384,7 @@ admin.route({
 
 ## Sponsored by
 
-[Pebble Technology!](https://getpebble.com)
+[Pebble Technology!](https://pebble.com)
 
 ## LICENSE
 
