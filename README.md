@@ -14,7 +14,7 @@ Easy, rich and fully validated [koa](http://koajs.com) routing.
 - built on the great [koa-router](https://github.com/alexmingoia/koa-router)
 - [exposed route definitions](#routes) for later analysis
 - string path support
-- [regexp path support](#path-regexps)
+- [regexp-like path support](#path-regexps)
 - [multiple method support](#multiple-methods-support)
 - [multiple middleware support](#multiple-middleware-support)
 - [continue on error support](#handling-errors)
@@ -23,44 +23,44 @@ Easy, rich and fully validated [koa](http://koajs.com) routing.
 - HTTP 405 and 501 support
 
 ```js
-var koa = require('koa')
-var router = require('koa-joi-router')
-var Joi = router.Joi
+var koa = require('koa');
+var router = require('koa-joi-router');
+var Joi = router.Joi;
 
-var public = router()
+var public = router();
 
 public.get('/', function*(){
-  this.body = 'hello joi-router!'
-})
+  this.body = 'hello joi-router!';
+});
 
 public.route({
-  method: 'post'
-, path: '/signup'
-, validate: {
+  method: 'post',
+  path: '/signup',
+  validate: {
     body: {
-      name: Joi.string().max(100)
-    , email: Joi.string().lowercase().email()
-    , password: Joi.string().max(100)
-    }
-  , output: {
-      userId: Joi.string()
-    , name: Joi.string()
-    }
-  , type: 'form'
-  }
-, handler: function*(){
-    var user = yield createUser(this.request.body)
-    this.status = 201
+      name: Joi.string().max(100),
+      email: Joi.string().lowercase().email(),
+      password: Joi.string().max(100)
+    },
+    output: {
+      userId: Joi.string(),
+      name: Joi.string()
+    },
+    type: 'form'
+  },
+  handler: function*(){
+    var user = yield createUser(this.request.body);
+    this.status = 201;
     this.body = {
-      userId: user.id
-    , name: user.name
-    }
+      userId: user.id,
+      name: user.name
+    };
   }
-})
+});
 
-var app = koa()
-app.use(public.middleware())
-app.listen()
+var app = koa();
+app.use(public.middleware());
+app.listen();
 ```
 
 ## Use
@@ -69,33 +69,33 @@ The design is such that you construct multiple router instances, one for
 each section of your application which you then add as koa middleware.
 
 ```js
-var router = require('koa-joi-router')
-var Joi = router.Joi
+var router = require('koa-joi-router');
+var Joi = router.Joi;
 
-var pub = router()
-var admin = router()
-var auth = router()
+var pub = router();
+var admin = router();
+var auth = router();
 
 // add some routes ..
 
 var app = koa();
-koa.use(pub.middleware())
-koa.use(admin.middleware())
-koa.use(auth.middleware())
+koa.use(pub.middleware());
+koa.use(admin.middleware());
+koa.use(auth.middleware());
 ```
 
 ## Module properties
 
 ### .Joi
 
-It is **RECOMMENDED** you use this bundled version of Joi 
+It is **HIGHLY RECOMMENDED** you use this bundled version of Joi
 to avoid bugs related to passing an object created with a different
 relase of Joi into the router.
 
 ```js
-var koa = require('koa')
-var router = require('koa-joi-router')
-var Joi = router.Joi
+var koa = require('koa');
+var router = require('koa-joi-router');
+var Joi = router.Joi;
 ```
 
 ## Router instance methods
@@ -106,47 +106,47 @@ Adds a new route to the router. `route()` accepts an object describing everythin
 the routes behavior.
 
 ```js
-var router = require('koa-joi-router')
-var public = router()
+var router = require('koa-joi-router');
+var public = router();
 
 public.route({
-  method: 'post'
-, path: '/signup'
-, validate: {
-    header: joiObject
-  , query: joiObject
-  , params: joiObject
-  , body: joiObject
-  , maxBody: '64kb'
-  , output: joiObject
-  , type: 'form'
-  , failure: 400
-  , continueOnError: false
-  }
-, handler: function*(){
-    yield createUser(this.request.body)
-    this.status = 201
-  }
-, meta: { this: { is: 'ignored' }}
-})
+  method: 'post',
+  path: '/signup',
+  validate: {
+    header: joiObject,
+    query: joiObject,
+    params: joiObject,
+    body: joiObject,
+    maxBody: '64kb',
+    output: joiObject,
+    type: 'form',
+    failure: 400,
+    continueOnError: false
+  },
+  handler: function*(){
+    yield createUser(this.request.body);
+    this.status = 201;
+  },
+  meta: { this: { is: 'ignored' }}
+});
 ```
 
 ##### .route() options
 
 - `method`: **required** HTTP method like "get", "post", "put", etc
-- `path`: **required** either a string or `RegExp`
+- `path`: **required** string
 - `validate`
-  - `header`: object which conforms to [joi](https://github.com/hapijs/joi) validation
-  - `query`: object which conforms to [joi](https://github.com/hapijs/joi) validation
-  - `params`: object which conforms to [joi](https://github.com/hapijs/joi) validation
-  - `body`: object which conforms to [joi](https://github.com/hapijs/joi) validation
+  - `header`: object which conforms to [Joi](https://github.com/hapijs/joi) validation
+  - `query`: object which conforms to [Joi](https://github.com/hapijs/joi) validation
+  - `params`: object which conforms to [Joi](https://github.com/hapijs/joi) validation
+  - `body`: object which conforms to [Joi](https://github.com/hapijs/joi) validation
   - `maxBody`: max incoming body size for forms or json input
   - `failure`: HTTP response code to use when input validation fails. default `400`
   - `type`: if validating the request body, this is **required**. either `form`, `json` or `multipart`
-  - `output`: output validator object which conforms to [joi](https://github.com/hapijs/joi) validation. if output is invalid, an HTTP 500 is returned
+  - `output`: output validator object which conforms to [Joi](https://github.com/hapijs/joi) validation. if output is invalid, an HTTP 500 is returned
   - `continueOnError`: if validation fails, this flags determines if `koa-joi-router` should [continue processing](#handling-errors) the middleware stack or stop and respond with an error immediately. useful when you want your route to handle the error response. default `false`
 - `handler`: **required** GeneratorFunction
-- `meta`: meta data about this route. koa-joi-router ignores this but stores it along with all other route data
+- `meta`: meta data about this route. `koa-joi-router` ignores this but stores it along with all other route data
 
 ### .get(),post(),put(),del() etc - HTTP methods
 
@@ -154,15 +154,15 @@ public.route({
 as well.
 
 ```js
-var router = require('koa-joi-router')
+var router = require('koa-joi-router');
 var admin = router();
 
 // signature: router.method(path [, config], handler [, handler])
 
-admin.put('/thing', handler)
-admin.get('/thing', middleware, handler)
-admin.post('/thing', config, handler)
-admin.del('/thing', config, middleware, handler)
+admin.put('/thing', handler);
+admin.get('/thing', middleware, handler);
+admin.post('/thing', config, handler);
+admin.del('/thing', config, middleware, handler);
 ```
 
 ### .middleware()
@@ -171,14 +171,14 @@ Generates routing middleware to be used with `koa`. If this middleware is
 never added to your `koa` application, your routes will not work.
 
 ```js
-var router = require('koa-joi-router')
-var public = router()
+var router = require('koa-joi-router');
+var public = router();
 
-public.get('/home', homepage)
+public.get('/home', homepage);
 
-var app = koa()
-app.use(public.middleware()) // wired up
-app.listen()
+var app = koa();
+app.use(public.middleware()); // wired up
+app.listen();
 ```
 
 ## Additions to ctx.request
@@ -203,13 +203,13 @@ parsed request input.
 
 ```js
 admin.route({
-  method: 'post'
-, path: '/blog'
-, validate: { type: 'json' }
-, handler: function *(){
-    console.log(this.request.body) // the incoming json as an object
+  method: 'post',
+  path: '/blog',
+  validate: { type: 'json' },
+  handler: function *(){
+    console.log(this.request.body); // the incoming json as an object
   }
-})
+});
 ```
 
 #### form
@@ -221,13 +221,13 @@ If successful, `ctx.request.body` will be set to the parsed request input.
 
 ```js
 admin.route({
-  method: 'post'
-, path: '/blog'
-, validate: { type: 'form' }
-, handler: function *(){
+  method: 'post',
+  path: '/blog',
+  validate: { type: 'form' },
+  handler: function *(){
     console.log(this.request.body) // the incoming form as an object
   }
-})
+});
 ```
 
 ### ctx.request.parts
@@ -247,21 +247,21 @@ If successful, `ctx.request.parts` will be set to a
 
 ```js
 admin.route({
-  method: 'post'
-, path: '/blog'
-, validate: { type: 'multipart' }
-, handler: function *(){
-    var parts = yield this.request.parts
-    var part
+  method: 'post',
+  path: '/blog',
+  validate: { type: 'multipart' },
+  handler: function *(){
+    var parts = yield this.request.parts;
+    var part;
 
     while (part = yield parts) {
       // do something with the incoming part stream
-      part.pipe(someOtherStream)
+      part.pipe(someOtherStream);
     }
 
-    console.log(parts.field.name) // form data
+    console.log(parts.field.name); // form data
   }
-})
+});
 ```
 
 ## Handling non-validated input
@@ -272,11 +272,11 @@ parse the incoming data however you see fit.
 
 ```js
 admin.route({
-  method: 'post'
-, path: '/blog'
-, validate: { }
-, handler: function *(){
-    console.log(this.request.body, this.request.parts) // undefined undefined
+  method: 'post',
+  path: '/blog',
+  validate: { },
+  handler: function *(){
+    console.log(this.request.body, this.request.parts); // undefined undefined
   }
 })
 ```
@@ -290,11 +290,11 @@ This is helpful when you'd like to introspect the previous definitions and
 take action e.g. to generate API documentation etc.
 
 ```js
-var router = require('koa-joi-router')
+var router = require('koa-joi-router');
 var admin = router();
-admin.post('/thing', { validate: { type: 'multipart' }}, handler)
+admin.post('/thing', { validate: { type: 'multipart' }}, handler);
 
-console.log(admin.routes)
+console.log(admin.routes);
 // [ { path: '/thing',
 //     method: [ 'post' ],
 //     handler: [ [Function] ],
@@ -308,9 +308,9 @@ Because [path-to-regexp](https://github.com/pillarjs/path-to-regexp)
 supports it, so do we!
 
 ```js
-var router = require('koa-joi-router')
-var admin = router()
-admin.get('/blog/:year(\\d{4})-:day(\\d{2})-:article(\\d{3})', function*(){})
+var router = require('koa-joi-router');
+var admin = router();
+admin.get('/blog/:year(\\d{4})-:day(\\d{2})-:article(\\d{3})', function*(){});
 ```
 
 ## Multiple methods support
@@ -318,13 +318,13 @@ admin.get('/blog/:year(\\d{4})-:day(\\d{2})-:article(\\d{3})', function*(){})
 Defining a route for multiple HTTP methods in a single shot is supported.
 
 ```js
-var router = require('koa-joi-router')
-var admin = router()
+var router = require('koa-joi-router');
+var admin = router();
 admin.route({
   path: '/',
   method: ['POST', 'PUT'],
   handler: fn
-})
+});
 ```
 
 ## Multiple middleware support
@@ -333,13 +333,13 @@ Often times you may need to add additional, route specific middleware to a
 single route.
 
 ```js
-var router = require('koa-joi-router')
-var admin = router()
+var router = require('koa-joi-router');
+var admin = router();
 admin.route({
   path: '/',
   method: ['POST', 'PUT'],
   handler: [ yourMiddleware, yourHandler ]
-})
+});
 ```
 
 ## Handling errors
@@ -352,16 +352,16 @@ flag to true. You can find out if validation failed by checking `ctx.invalid`.
 
 ```js
 admin.route({
-  method: 'post'
-, path: '/add'
-, validate: {
-    type: 'form'
-  , body: {
+  method: 'post',
+  path: '/add',
+  validate: {
+    type: 'form',
+    body: {
       id: Joi.string().length(10)
-    }
-  , continueOnError: true
-  }
-, handler: function *(){
+    },
+    continueOnError: true
+  },
+  handler: function *(){
     if (this.invalid) {
       console.log(this.invalid.header);
       console.log(this.invalid.query);
@@ -372,7 +372,7 @@ admin.route({
 
     this.body = yield render('add', { errors: this.invalid });
   }
-})
+});
 ```
 
 ## Development
