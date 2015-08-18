@@ -1,10 +1,11 @@
+'use strict';
 
 var assert = require('assert');
 var debug = require('debug')('koa-joi-router');
 var isGenFn = require('is-gen-fn');
 var flatten = require('flatten');
 var methods = require('methods');
-var router = require('koa-router');
+var KoaRouter = require('koa-router');
 var busboy = require('co-busboy');
 var parse = require('co-body');
 var Joi = require('joi');
@@ -15,20 +16,21 @@ module.exports = Router;
 // expose Joi for use in applications
 Router.Joi = Joi;
 
-function Router(){
-  if (!(this instanceof Router))
+function Router() {
+  if (!(this instanceof Router)) {
     return new Router();
+  }
 
   this.routes = [];
-  this.router = new router();
+  this.router = new KoaRouter();
 }
 
 /**
  * Array of routes
+ *
+ * Router.prototype.routes;
  * @api public
  */
-
-Router.prototype.routes;
 
 /**
  * Return koa middleware
@@ -36,9 +38,9 @@ Router.prototype.routes;
  * @api public
  */
 
-Router.prototype.middleware = function middleware(){
+Router.prototype.middleware = function middleware() {
   return this.router.routes();
-}
+};
 
 /**
  * Adds a route to this router, storing the route
@@ -57,7 +59,8 @@ Router.prototype.middleware = function middleware(){
  *       params: Joi object (:id)
  *       query: Joi object (validate key/val pairs in the querystring)
  *       body: Joi object (the request payload body) (json or form)
- *       maxBody: '64kb' // (json, x-www-form-urlencoded only - not stream size) optional
+ *       maxBody: '64kb' // (json, x-www-form-urlencoded only - not stream size)
+ *                       // optional
  *       type: 'json|form|multipart' (required when body is specified)
  *       failure: 400 // http error code to use
  *     },
@@ -84,10 +87,10 @@ Router.prototype.route = function route(spec) {
   var handlers = flatten(spec.handler);
 
   var args = [
-      spec.path
-    , prepareRequest
-    , bodyParser
-    , validator
+    spec.path,
+    prepareRequest,
+    bodyParser,
+    validator
   ].concat(handlers);
 
   var router = this.router;
@@ -97,7 +100,7 @@ Router.prototype.route = function route(spec) {
   });
 
   return this;
-}
+};
 
 /**
  * Validate the spec passed to route()
@@ -106,24 +109,25 @@ Router.prototype.route = function route(spec) {
  * @api private
  */
 
-Router.prototype._validateRouteSpec = function validateRouteSpec(spec){
+Router.prototype._validateRouteSpec = function validateRouteSpec(spec) {
   assert(spec, 'missing spec');
 
-  var ok = 'string' == typeof spec.path || spec.path instanceof RegExp;
+  var ok = typeof spec.path === 'string' || spec.path instanceof RegExp;
   assert(ok, 'invalid route path');
 
   checkHandler(spec);
   checkMethods(spec);
   checkValidators(spec);
-}
+};
 
 /**
  * @api private
  */
 
-function checkHandler(spec){
-  if (!Array.isArray(spec.handler))
+function checkHandler(spec) {
+  if (!Array.isArray(spec.handler)) {
     spec.handler = [spec.handler];
+  }
 
   return spec.handler.forEach(isGeneratorFunction);
 }
@@ -132,7 +136,7 @@ function checkHandler(spec){
  * @api private
  */
 
-function isGeneratorFunction(handler){
+function isGeneratorFunction(handler) {
   assert(isGenFn(handler), 'route handler must be a GeneratorFunction');
 }
 
@@ -143,20 +147,23 @@ function isGeneratorFunction(handler){
  * @api private
  */
 
-function checkMethods(spec){
+function checkMethods(spec) {
   assert(spec.method, 'missing route methods');
 
-  if ('string' == typeof spec.method)
+  if (typeof spec.method === 'string') {
     spec.method = spec.method.split(' ');
+  }
 
-  if (!Array.isArray(spec.method))
+  if (!Array.isArray(spec.method)) {
     throw new TypeError('route methods must be an array or string');
+  }
 
-  if (0 === spec.method.length)
+  if (spec.method.length === 0) {
     throw new Error('missing route method');
+  }
 
   spec.method.forEach(function(method, i) {
-    assert('string' == typeof method, 'route method must be a string');
+    assert(typeof method === 'string', 'route method must be a string');
     spec.method[i] = method.toLowerCase();
   });
 }
@@ -168,22 +175,24 @@ function checkMethods(spec){
  * @api private
  */
 
-function checkValidators(spec){
+function checkValidators(spec) {
   if (!spec.validate) return;
 
+  var text;
   if (spec.validate.body) {
-    var text = 'validate.type must be declared when using validate.body';
+    text = 'validate.type must be declared when using validate.body';
     assert(/json|form/.test(spec.validate.type), text);
   }
 
   if (spec.validate.type) {
-    var text = 'validate.type must be either json, form, multipart or stream';
+    text = 'validate.type must be either json, form, multipart or stream';
     assert(/json|form|multipart|stream/i.test(spec.validate.type), text);
   }
 
   // default HTTP status code for failures
-  if (!spec.validate.failure)
+  if (!spec.validate.failure) {
     spec.validate.failure = 400;
+  }
 }
 
 /**
@@ -198,28 +207,43 @@ function makeBodyParser(spec) {
   return function* parsePayload(next) {
     if (!(spec.validate && spec.validate.type)) return yield* next;
 
+    var opts;
+
     try {
       switch (spec.validate.type) {
         case 'json':
-          if (!this.request.is('json'))
+          if (!this.request.is('json')) {
             return this.throw(400, 'expected json');
-          var opts = { limit: spec.validate.maxBody };
+          }
+
+          opts = {
+            limit: spec.validate.maxBody
+          };
+
           this.request.body = yield parse.json(this, opts);
           break;
 
         case 'form':
-          if (!this.request.is('urlencoded'))
+          if (!this.request.is('urlencoded')) {
             return this.throw(400, 'expected x-www-form-urlencoded');
-          var opts = { limit: spec.validate.maxBody };
+          }
+
+          opts = {
+            limit: spec.validate.maxBody
+          };
+
           this.request.body = yield parse.form(this, opts);
           break;
 
         case 'stream':
         case 'multipart':
-          if (!this.request.is('multipart/*'))
+          if (!this.request.is('multipart/*')) {
             return this.throw(400, 'expected multipart');
-          var opts = spec.validate.multipartOptions || {}; // TODO document this
+          }
+
+          opts = spec.validate.multipartOptions || {}; // TODO document this
           opts.autoFields = true;
+
           this.request.parts = busboy(this, opts);
           break;
       }
@@ -229,7 +253,7 @@ function makeBodyParser(spec) {
     }
 
     yield* next;
-  }
+  };
 }
 
 /**
@@ -239,7 +263,7 @@ function makeBodyParser(spec) {
 function captureError(ctx, type, err) {
   // expose Error message to JSON.stringify()
   err.msg = err.message;
-  ctx.invalid || (ctx.invalid = {});
+  if (!ctx.invalid) ctx.invalid = {};
   ctx.invalid[type] = err;
 }
 
@@ -255,13 +279,15 @@ function makeValidator(spec) {
   var props = 'header query params body'.split(' ');
 
   return function* validator(next) {
+    var err;
+
     if (!spec.validate) return yield* next;
 
     for (var i = 0; i < props.length; ++i) {
       var prop = props[i];
 
       if (spec.validate[prop]) {
-        var err = validateInput(prop, this.request, spec.validate);
+        err = validateInput(prop, this.request, spec.validate);
 
         if (err) {
           if (!spec.validate.continueOnError) return this.throw(err);
@@ -273,10 +299,10 @@ function makeValidator(spec) {
     yield* next;
 
     if (spec.validate.output) {
-      var err = validateOutput(this, spec);
+      err = validateOutput(this, spec);
       if (err) return this.throw(err);
     }
-  }
+  };
 }
 
 /**
@@ -311,7 +337,14 @@ function validateInput(prop, request, validate) {
   }
 
   // update our request w/ the casted values
-  request[prop] = res.value;
+  if (prop === 'header') {
+    // request.header is getter only, cannot set it
+    Object.keys(res.value).forEach(function(key) {
+      request.header[key] = res.value[key];
+    });
+  } else {
+    request[prop] = res.value;
+  }
 }
 
 /**
@@ -386,10 +419,10 @@ methods.forEach(function(method) {
     }
 
     var spec = {
-        path: path
-      , method: method
-      , handler: fns
-    }
+      path: path,
+      method: method,
+      handler: fns
+    };
 
     Object.keys(config).forEach(function(key) {
       spec[key] = config[key];
@@ -397,6 +430,6 @@ methods.forEach(function(method) {
 
     this.route(spec);
     return this;
-  }
+  };
 });
 
