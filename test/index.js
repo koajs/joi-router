@@ -122,16 +122,12 @@ describe('koa-joi-router', function() {
       });
 
       describe('path',function() {
-        it('can be a string or regexp', function(done) {
+        it('can be a string', function(done) {
           var r = router();
           var fn = function*(){}
 
           assert.doesNotThrow(function(){
             r.get('/', fn)
-          })
-
-          assert.doesNotThrow(function(){
-            r.get(/\asdf/i, fn)
           })
 
           done();
@@ -607,7 +603,7 @@ describe('koa-joi-router', function() {
 
         r.route({
           method: 'get'
-        , path: /^\/id\/(\d+)-(\d+)/i
+        , path: '/id/(\\d+)-(\\d+)'
         , validate: {
             params: Joi.object().keys({
               0: Joi.number().min(5).max(10)

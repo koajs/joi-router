@@ -37,7 +37,7 @@ Router.prototype.routes;
  */
 
 Router.prototype.middleware = function middleware(){
-  return this.router.middleware();
+  return this.router.routes();
 }
 
 /**
@@ -85,13 +85,17 @@ Router.prototype.route = function route(spec) {
 
   var args = [
       spec.path
-    , spec.method
     , prepareRequest
     , bodyParser
     , validator
   ].concat(handlers);
 
-  this.router.register.apply(this.router, args);
+  var router = this.router;
+
+  spec.method.forEach(function(method) {
+    router[method].apply(router, args);
+  });
+
   return this;
 }
 
@@ -283,14 +287,6 @@ function makeValidator(spec) {
 
 function* prepareRequest(next) {
   this.request.params = this.params;
-
-  // backward compatible with koa-router 3.x
-  if (Object.keys(this.request.params).length === 0) {
-    for (var i = 0; i < this.captures.length; ++i) {
-      this.request.params[i] = this.captures[i];
-    }
-  }
-
   yield* next;
 }
 

@@ -303,13 +303,14 @@ console.log(admin.routes)
 
 ## Path RegExps
 
-Sometime you need a `RegExp` for your route definition.
-Because [koa-router](https://github.com/alexmingoia/koa-router) support it, so do we!
+Sometimes you need `RegExp`-like syntax support for your route definitions.
+Because [path-to-regexp](https://github.com/pillarjs/path-to-regexp)
+supports it, so do we!
 
 ```js
 var router = require('koa-joi-router')
 var admin = router()
-admin.get(/^\/blog\/\d{4}-\d{2}-\d{2}\/?$/i, function*(){})
+admin.get('/blog/:year(\\d{4})-:day(\\d{2})-:article(\\d{3})', function*(){})
 ```
 
 ## Multiple methods support
