@@ -159,7 +159,7 @@ describe('koa-joi-router', function() {
         yield* next;
       }
 
-      function* test2 () {
+      function* test2() {
         this.body = this.test1Ran
           ? '<h1>Hello!</h1>'
           : 'fail';

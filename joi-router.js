@@ -282,29 +282,17 @@ function makeValidator(spec) {
  */
 
 function* prepareRequest(next) {
-  this.request.params = toObject(this.params);
+  this.request.params = this.params;
+
+  // backward compatible with koa-router 3.x
+  if (Object.keys(this.request.params).length === 0) {
+    for (var i = 0; i < this.captures.length; ++i) {
+      this.request.params[i] = this.captures[i];
+    }
+  }
+
   yield* next;
 }
-
-/**
- * Converts an object-like object into a real object.
- * This is necessary to convert koa-route params
- * objects into real objects so that they are compatible
- * with Joi.
- *
- * @param {Array} arr
- * @return {Object}
- * @api private
- */
-
-function toObject(arr) {
-  var ret = {};
-  var keys = Object.keys(arr);
-  for (var i = 0; i < keys.length; ++i) {
-    ret[keys[i]] = arr[keys[i]];
-  }
-  return ret;
-};
 
 /**
  * Validates request[prop] data with the defined validation schema.
