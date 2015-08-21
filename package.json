@@ -45,7 +45,8 @@
       "pebble"
     ],
     "env": {
-      "node": true
+      "node": true,
+      "mocha": true
     }
   }
 }
