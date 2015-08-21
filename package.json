@@ -43,10 +43,6 @@
   "eslintConfig": {
     "extends": [
       "pebble"
-    ],
-    "env": {
-      "node": true,
-      "mocha": true
-    }
+    ]
   }
 }
