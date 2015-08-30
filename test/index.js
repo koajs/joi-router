@@ -124,9 +124,9 @@ describe('koa-joi-router', function() {
           var fn = function*() {};
 
           tests.forEach(function(test) {
-            var method = test[1] === 0
-              ? assert.throws
-              : assert.doesNotThrow;
+            var method = test[1] === 0 ?
+              assert.throws :
+              assert.doesNotThrow;
 
             method(function() {
               r.route({
@@ -178,9 +178,9 @@ describe('koa-joi-router', function() {
       }
 
       function* test2() {
-        this.body = this.test1Ran
-          ? '<h1>Hello!</h1>'
-          : 'fail';
+        this.body = this.test1Ran ?
+          '<h1>Hello!</h1>' :
+          'fail';
       }
 
       r.route({
@@ -530,9 +530,9 @@ describe('koa-joi-router', function() {
             path: '/',
             type: 'multipart',
             handler: function* () {
-              this.status = undefined === this.request.body
-                ? 200
-                : 500;
+              this.status = undefined === this.request.body ?
+                200 :
+                500;
             },
             validate: {
               type: 'multipart'
@@ -822,9 +822,9 @@ describe('koa-joi-router', function() {
               it(tests[name] ? 'works' : 'fails', function(done) {
                 var r = router();
 
-                var method = tests[name]
-                  ? assert.doesNotThrow
-                  : assert.throws;
+                var method = tests[name] ?
+                  assert.doesNotThrow :
+                  assert.throws;
 
                 method(function() {
                   r.route({
