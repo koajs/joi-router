@@ -10,6 +10,7 @@ var busboy = require('co-busboy');
 var parse = require('co-body');
 var Joi = require('joi');
 var slice = require('sliced');
+var delegate = require('delegates');
 
 module.exports = Router;
 
@@ -31,6 +32,14 @@ function Router() {
  * Router.prototype.routes;
  * @api public
  */
+
+/**
+ * Delegate methods to internal router object
+ */
+
+delegate(Router.prototype, 'router')
+  .method('prefix')
+  .method('use');
 
 /**
  * Return koa middleware

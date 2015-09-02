@@ -1210,4 +1210,110 @@ describe('koa-joi-router', function() {
       });
     });
   });
+
+  describe('use()', function() {
+    describe('runs middleware before routes', function() {
+      it('when called before routes', function*() {
+        var r = router();
+        var middlewareRanFirst = false;
+
+        r.use(function*(next) {
+          middlewareRanFirst = true;
+          yield next;
+        });
+
+        r.get('/test', function*() {
+          this.body = String(middlewareRanFirst);
+        });
+
+        var app = koa();
+        app.use(r.middleware());
+
+        yield test(app).get('/test')
+        .expect('true')
+        .expect(200)
+        .end();
+      });
+
+      it('when called after routes', function*() {
+        var r = router();
+        var middlewareRanFirst = false;
+
+        r.get('/test', function*() {
+          this.body = String(middlewareRanFirst);
+        });
+
+        r.use(function*(next) {
+          middlewareRanFirst = true;
+          yield next;
+        });
+
+        var app = koa();
+        app.use(r.middleware());
+
+        yield test(app).get('/test')
+        .expect('true')
+        .expect(200)
+        .end();
+      });
+    });
+
+    describe('accepts an optional path', function() {
+      it('applies middleware only to that path', function*() {
+        var r = router();
+        var middlewareRanFirst = false;
+
+        r.get(['/test', '/nada'], function* route() {
+          this.body = String(middlewareRanFirst);
+        });
+
+        r.use('/nada', function*(next) {
+          middlewareRanFirst = true;
+          yield next;
+        });
+
+        var app = koa();
+        app.use(r.middleware());
+
+        yield test(app).get('/test')
+        .expect('false')
+        .expect(200)
+        .end();
+
+        yield test(app).get('/test')
+        .expect('false')
+        .expect(200)
+        .end();
+      });
+    });
+  });
+
+  describe('prefix()', function() {
+    it('adds routes as children of the `path`', function*() {
+      var r = router();
+      var msg = 'fail';
+
+      r.get('/test', function*() {
+        this.body = msg;
+      });
+
+      r.use('/test', function*() {
+        msg = 'works';
+      });
+
+      r.prefix('/user');
+
+      var app = koa();
+      app.use(r.middleware());
+
+      yield test(app).get('/test')
+      .expect(404)
+      .end();
+
+      yield test(app).get('/user/test')
+      .expect('works')
+      .expect(200)
+      .end();
+    });
+  });
 });
