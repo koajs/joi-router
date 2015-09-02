@@ -1,5 +1,7 @@
 
-test: lint
+test: mocha lint
+
+mocha:
 	@NODE_ENV=test ./node_modules/.bin/mocha $(MOCHA_OPTS)
 
 lint:
@@ -25,4 +27,4 @@ test-travis: lint
 		-- -u exports \
 		--bail
 
-.PHONY: test lint test-cov open-cov test-travis
+.PHONY: test mocha lint test-cov open-cov test-travis
