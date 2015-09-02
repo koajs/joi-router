@@ -18,8 +18,9 @@ Easy, rich and fully validated [koa](http://koajs.com) routing.
 - [multiple method support](#multiple-methods-support)
 - [multiple middleware support](#multiple-middleware-support)
 - [continue on error support](#handling-errors)
+- [router prefixing support](#prefix)
+- [router level middleware support](#use)
 - meta data support
-- configurable
 - HTTP 405 and 501 support
 
 ```js
@@ -63,7 +64,7 @@ app.use(public.middleware());
 app.listen();
 ```
 
-## Use
+## Usage
 `koa-joi-router` returns a constructor which you use to define your routes.
 The design is such that you construct multiple router instances, one for
 each section of your application which you then add as koa middleware.
@@ -163,6 +164,52 @@ admin.put('/thing', handler);
 admin.get('/thing', middleware, handler);
 admin.post('/thing', config, handler);
 admin.del('/thing', config, middleware, handler);
+```
+
+### .use()
+
+When you need to run middleware before all routes, OR, if you just need to run
+middleware before a specific path, this method is for you.
+
+To run middleware before all routes, pass your middleware directly:
+
+```js
+var router = require('koa-joi-router');
+var users = router();
+
+users.get('/something', handler);
+users.use(runThisBeforeAllRoutes);
+```
+
+It doesn't matter if you define your routes before or after you call `.use()`,
+the middleware passed to `.use()` will run before your routes and only when
+the path matches.
+
+To run middleware before a specific route, also pass the optional `path`:
+
+```js
+var router = require('koa-joi-router');
+var users = router();
+
+users.get('/:id', handler);
+users.use('/:id', runThisBeforeHandler);
+```
+
+### .prefix()
+
+Defines a route prefix for all defined routes. This is handy in "mounting" scenarios.
+
+```js
+var router = require('koa-joi-router');
+var users = router();
+
+users.get('/:id', handler);
+// GET /users/3 -> 404
+// GET /3 -> 200
+
+users.prefix('/user');
+// GET /users/3 -> 200
+// GET /3 -> 404
 ```
 
 ### .middleware()
