@@ -1,5 +1,8 @@
 'use strict';
 
+require('co-mocha');
+require('co-supertest');
+
 var router = require('../');
 var koa = require('koa');
 var assert = require('assert');
@@ -1263,9 +1266,12 @@ describe('koa-joi-router', function() {
         var r = router();
         var middlewareRanFirst = false;
 
-        r.get(['/test', '/nada'], function* route() {
+        function* route() {
           this.body = String(middlewareRanFirst);
-        });
+        }
+
+        r.get('/test', route);
+        r.get('/nada', route);
 
         r.use('/nada', function*(next) {
           middlewareRanFirst = true;
@@ -1280,8 +1286,8 @@ describe('koa-joi-router', function() {
         .expect(200)
         .end();
 
-        yield test(app).get('/test')
-        .expect('false')
+        yield test(app).get('/nada')
+        .expect('true')
         .expect(200)
         .end();
       });
@@ -1290,28 +1296,49 @@ describe('koa-joi-router', function() {
 
   describe('prefix()', function() {
     it('adds routes as children of the `path`', function*() {
-      var r = router();
-      var msg = 'fail';
+      var app = koa();
+      app.context.msg = 'fail';
 
-      r.get('/test', function*() {
-        this.body = msg;
+      var r = router();
+
+      r.use(function*(next) {
+        this.msg = 'works';
+        yield next;
       });
 
-      r.use('/test', function*() {
-        msg = 'works';
+      r.get('/', function*() {
+        this.body = this.msg;
+      });
+
+      r.get('/itworks', function*() {
+        this.body = 'it' + this.msg;
       });
 
       r.prefix('/user');
 
-      var app = koa();
       app.use(r.middleware());
 
-      yield test(app).get('/test')
+      yield test(app).get('/')
       .expect(404)
       .end();
 
-      yield test(app).get('/user/test')
+      yield test(app).get('/user')
       .expect('works')
+      .expect(200)
+      .end();
+
+      yield test(app).get('/user/')
+      .expect('works')
+      .expect(200)
+      .end();
+
+      yield test(app).get('/user/itworks')
+      .expect('itworks')
+      .expect(200)
+      .end();
+
+      yield test(app).get('/user/itworks/')
+      .expect('itworks')
       .expect(200)
       .end();
     });
