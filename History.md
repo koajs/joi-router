@@ -1,4 +1,15 @@
 
+2.1.0 / 2015-09-08
+==================
+
+ * changed; use aheckmann/koa-router (until koa-router merges upstream fixes https://github.com/alexmingoia/koa-router/pull/169)
+ * updated; and clean up dependencies
+ * added .use() and .prefix() support
+ * tests; better exercise of koa-router variations
+ * tests; run tests before lint
+ * add mocha env to eslint config #3 from wilmoore/eslint-mocha-env
+ * add eslint
+
 2.0.0 / 2015-08-18
 ==================
 
