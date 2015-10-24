@@ -103,8 +103,30 @@ var Joi = router.Joi;
 
 ### .route()
 
-Adds a new route to the router. `route()` accepts an object describing everything about
+Adds a new route to the router. `route()` accepts an object or array of objects describing everything about
 the routes behavior.
+
+```js
+var router = require('koa-joi-router');
+var public = router();
+
+var routes = [
+  {
+    method: 'post',
+    path: '/users',
+    handler: function*(){}
+  },
+  {
+    method: 'get',
+    path: '/users',
+    handler: function*(){}
+  }
+];
+
+public.route(routes);
+```
+
+or
 
 ```js
 var router = require('koa-joi-router');

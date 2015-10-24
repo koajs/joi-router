@@ -52,7 +52,7 @@ Router.prototype.middleware = function middleware() {
 };
 
 /**
- * Adds a route to this router, storing the route
+ * Adds a route or array of routes to this router, storing the route
  * in `this.routes`.
  *
  * Example:
@@ -86,6 +86,26 @@ Router.prototype.middleware = function middleware() {
  */
 
 Router.prototype.route = function route(spec) {
+  if (Array.isArray(spec)) {
+    for (var i = 0; i < spec.length; i++) {
+      this._addRoute(spec[i]);
+    }
+  } else {
+    this._addRoute(spec);
+  }
+
+  return this;
+};
+
+/**
+ * Adds a route to this router, storing the route
+ * in `this.routes`.
+ *
+ * @param {Object} spec
+ * @api private
+ */
+
+Router.prototype._addRoute = function addRoute(spec) {
   this._validateRouteSpec(spec);
   this.routes.push(spec);
 
@@ -107,8 +127,6 @@ Router.prototype.route = function route(spec) {
   spec.method.forEach(function(method) {
     router[method].apply(router, args);
   });
-
-  return this;
 };
 
 /**
@@ -441,4 +459,3 @@ methods.forEach(function(method) {
     return this;
   };
 });
-
