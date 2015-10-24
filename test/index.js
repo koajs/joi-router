@@ -1096,6 +1096,29 @@ describe('koa-joi-router', function() {
           });
         });
       });
+
+      describe('status is respond status is greater than 300', function() {
+        var r = router();
+
+        r.route({
+          method: 'post',
+          path: '/a/b',
+          validate: {
+            output: Joi.number().max(10).required()
+          },
+          handler: function*() {
+            this.body = 'not found';
+            this.status = 404;
+          }
+        });
+
+        var app = koa();
+        app.use(r.middleware());
+
+        it('responds with the response body', function(done) {
+          test(app).post('/a/b').expect('not found').expect(404, done);
+        });
+      });
     });
 
     describe('with multiple methods', function() {
