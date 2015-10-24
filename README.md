@@ -417,7 +417,9 @@ By default, `koa-joi-router` stops processing the middleware stack when either
 input validation fails. This means your route will not be reached. If
 this isn't what you want, for example, if you're writing a web app which needs
 to respond with custom html describing the errors, set the `validate.continueOnError`
-flag to true. You can find out if validation failed by checking `ctx.invalid`.
+flag to true. You can find out if validation failed by checking `ctx.invalid`. If you're 
+define output validation only a response status code between 200 and 299 is considered 
+for output validation.
 
 ```js
 admin.route({

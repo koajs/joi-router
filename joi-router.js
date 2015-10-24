@@ -325,7 +325,7 @@ function makeValidator(spec) {
 
     yield* next;
 
-    if (spec.validate.output) {
+    if (spec.validate.output && this.status >= 200 && this.status < 300) {
       err = validateOutput(this, spec);
       if (err) return this.throw(err);
     }
