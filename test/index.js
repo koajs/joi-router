@@ -158,7 +158,7 @@ describe('koa-joi-router', function() {
       });
     });
 
-    it('adds routes to the routes array', function(done) {
+    it('adds route to the routes array', function(done) {
       var r = router();
       assert.equal(0, r.routes.length);
 
@@ -169,6 +169,27 @@ describe('koa-joi-router', function() {
       });
 
       assert.equal(1, r.routes.length);
+      done();
+    });
+
+    it('adds routes to the routes array', function(done) {
+      var r = router();
+      assert.equal(0, r.routes.length);
+
+      r.route([
+        {
+          method: 'put',
+          path: '/asdf/:id',
+          handler: function*() {}
+        },
+        {
+          method: 'get',
+          path: '/asdf/:id',
+          handler: function*() {}
+        }
+      ]);
+
+      assert.equal(2, r.routes.length);
       done();
     });
 
