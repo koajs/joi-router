@@ -654,13 +654,19 @@ describe('koa-joi-router', function() {
           validate: {
             query: Joi.object().keys({
               q: Joi.number().min(5).max(8).required(),
-              s: Joi.string().alphanum().length(6)
+              s: Joi.string().alphanum().length(6),
+              d: Joi.date().iso()
             }).options({
               allowUnknown: true
             })
           },
           handler: function*() {
-            this.body = this.request.query;
+            if (this.request.query.d !== undefined &&
+                !(this.request.query.d instanceof Date)) {
+              this.status = 400;
+            } else {
+              this.body = this.request.query;
+            }
           }
         });
 
@@ -703,6 +709,17 @@ describe('koa-joi-router', function() {
             assert.equal(5, res.body.q);
             assert.equal('as9fgh', res.body.s);
             assert.equal(10, res.body.sort);
+            done(err);
+          });
+        });
+
+        it('valid q and valid d', function(done) {
+          var timestamp = new Date();
+          test(app).get('/a?q=5&d=' + timestamp.toISOString())
+          .end(function(err, res) {
+            if (err) return done(err);
+            assert.equal(200, res.statusCode);
+            assert.equal(timestamp.toISOString(), res.body.d);
             done(err);
           });
         });

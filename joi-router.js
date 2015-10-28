@@ -12,6 +12,7 @@ var Joi = require('joi');
 var slice = require('sliced');
 var delegate = require('delegates');
 var OutputValidator = require('./output-validator');
+var qs = require('querystring');
 
 module.exports = Router;
 
@@ -380,6 +381,37 @@ function validateInput(prop, request, validate) {
       request.header[key] = res.value[key];
     });
   } else {
+    if (prop === 'query') {
+      var dateKeys = [];
+      Object.keys(res.value).forEach(function(key) {
+        if (res.value[key] instanceof Date) {
+          dateKeys.push(key);
+          res.value[key] = res.value[key].toISOString();
+        }
+      });
+      if (dateKeys.length > 0) {
+        Object.defineProperty(request, 'query', {
+          set: function(obj) {
+            this.querystring = qs.stringify(obj);
+          },
+          get: (function() {
+            var cache = {};
+            return function() {
+              if (cache[request.querystring]) {
+                return cache[request.querystring];
+              }
+
+              var query = qs.parse(request.querystring);
+              dateKeys.forEach(function(key) {
+                query[key] = new Date(query[key]);
+              });
+              cache[request.querystring] = query;
+              return query;
+            };
+          })()
+        });
+      }
+    }
     request[prop] = res.value;
   }
 }
