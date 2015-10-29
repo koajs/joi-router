@@ -655,7 +655,8 @@ describe('koa-joi-router', function() {
             query: Joi.object().keys({
               q: Joi.number().min(5).max(8).required(),
               s: Joi.string().alphanum().length(6),
-              d: Joi.date().iso()
+              d: Joi.date().iso(),
+              b: Joi.boolean()
             }).options({
               allowUnknown: true
             })
@@ -664,9 +665,16 @@ describe('koa-joi-router', function() {
             if (this.request.query.d !== undefined &&
                 !(this.request.query.d instanceof Date)) {
               this.status = 400;
-            } else {
-              this.body = this.request.query;
+              return;
             }
+
+            if (this.request.query.b !== undefined &&
+                typeof this.request.query.b !== 'boolean') {
+              this.status = 400;
+              return;
+            }
+
+            this.body = this.request.query;
           }
         });
 
@@ -720,6 +728,16 @@ describe('koa-joi-router', function() {
             if (err) return done(err);
             assert.equal(200, res.statusCode);
             assert.equal(timestamp.toISOString(), res.body.d);
+            done(err);
+          });
+        });
+
+        it('valid q and valid b', function(done) {
+          test(app).get('/a?q=5&b=true')
+          .end(function(err, res) {
+            if (err) return done(err);
+            assert.equal(200, res.statusCode);
+            assert.equal(true, res.body.b);
             done(err);
           });
         });
