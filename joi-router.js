@@ -373,13 +373,16 @@ function validateInput(prop, request, validate) {
   } else {
     if (prop === 'query') {
       var dateKeys = [];
+      var boolKeys = [];
       Object.keys(res.value).forEach(function(key) {
         if (res.value[key] instanceof Date) {
           dateKeys.push(key);
           res.value[key] = res.value[key].toISOString();
+        } else if (res.value[key] === true || res.value[key] === false) {
+          boolKeys.push(key);
         }
       });
-      if (dateKeys.length > 0) {
+      if (dateKeys.length > 0 || boolKeys.length > 0) {
         Object.defineProperty(request, 'query', {
           set: function(obj) {
             this.querystring = qs.stringify(obj);
@@ -394,6 +397,9 @@ function validateInput(prop, request, validate) {
               var query = qs.parse(request.querystring);
               dateKeys.forEach(function(key) {
                 query[key] = new Date(query[key]);
+              });
+              boolKeys.forEach(function(key) {
+                query[key] = query[key] === 'true';
               });
               cache[request.querystring] = query;
               return query;
