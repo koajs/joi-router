@@ -575,6 +575,91 @@ describe('koa-joi-router', function() {
           .expect(200, done);
         });
       });
+
+      describe('json or form', function() {
+        describe('and valid json is sent', function() {
+          it('is parsed as json', function(done) {
+            var r = router();
+
+            r.route({
+              method: 'post',
+              path: '/',
+              handler: fn,
+              validate: {
+                type: ['json','form']
+              }
+            });
+
+            function* fn() {
+              this.body = this.request.body.last + ' ' + this.request.body.first;
+            }
+
+            var app = koa();
+            app.use(r.middleware());
+            test(app).post('/')
+                .send({
+                  last: 'Heckmann',
+                  first: 'Aaron'
+                })
+                .expect(200)
+                .expect('Heckmann Aaron', done);
+          });
+        });
+
+        describe('and valid form is sent', function() {
+          it('is parsed as form', function(done) {
+            var r = router();
+
+            r.route({
+              method: 'post',
+              path: '/',
+              handler: function*() {
+                this.status = 204;
+              },
+              validate: {
+                type: ['json','form']
+              }
+            });
+
+            var app = koa();
+            app.use(r.middleware());
+
+            test(app)
+                .post('/')
+                .type('form')
+                .send({
+                  name: 'Pebble'
+                })
+                .expect(204, done);
+          });
+        });
+
+        describe('and neither json nor form is sent', function() {
+          it('fails', function(done) {
+            var r = router();
+
+            r.route({
+              method: 'post',
+              path: '/',
+              handler: function*() {
+                this.status = 204;
+              },
+              validate: {
+                type: 'json'
+              }
+            });
+
+            var app = koa();
+            app.use(r.middleware());
+
+            test(app)
+                .post('/')
+                .type('text')
+                .send('text')
+                .expect(400, done);
+          });
+        });
+      })
     });
   });
 
@@ -654,12 +739,26 @@ describe('koa-joi-router', function() {
           validate: {
             query: Joi.object().keys({
               q: Joi.number().min(5).max(8).required(),
-              s: Joi.string().alphanum().length(6)
+              s: Joi.string().alphanum().length(6),
+              d: Joi.date().iso(),
+              b: Joi.boolean()
             }).options({
               allowUnknown: true
             })
           },
           handler: function*() {
+            if (this.request.query.d !== undefined &&
+                !(this.request.query.d instanceof Date)) {
+              this.status = 400;
+              return;
+            }
+
+            if (this.request.query.b !== undefined &&
+                typeof this.request.query.b !== 'boolean') {
+              this.status = 400;
+              return;
+            }
+
             this.body = this.request.query;
           }
         });
@@ -703,6 +802,27 @@ describe('koa-joi-router', function() {
             assert.equal(5, res.body.q);
             assert.equal('as9fgh', res.body.s);
             assert.equal(10, res.body.sort);
+            done(err);
+          });
+        });
+
+        it('valid q and valid d', function(done) {
+          var timestamp = new Date();
+          test(app).get('/a?q=5&d=' + timestamp.toISOString())
+          .end(function(err, res) {
+            if (err) return done(err);
+            assert.equal(200, res.statusCode);
+            assert.equal(timestamp.toISOString(), res.body.d);
+            done(err);
+          });
+        });
+
+        it('valid q and valid b', function(done) {
+          test(app).get('/a?q=5&b=true')
+          .end(function(err, res) {
+            if (err) return done(err);
+            assert.equal(200, res.statusCode);
+            assert.equal(true, res.body.b);
             done(err);
           });
         });
