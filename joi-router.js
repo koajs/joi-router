@@ -207,14 +207,30 @@ function checkValidators(spec) {
   if (!spec.validate) return;
 
   var text;
+  var pattern;
   if (spec.validate.body) {
     text = 'validate.type must be declared when using validate.body';
-    assert(/json|form/.test(spec.validate.type), text);
+    pattern = /json|form/i;
+    if (Array.isArray(spec.validate.type)) {
+      for (var i in spec.validate.type) {
+        assert(pattern.test(spec.validate.type[i]), text);
+      }
+    } else {
+      assert(pattern.test(spec.validate.type), text);
+    }
   }
 
   if (spec.validate.type) {
     text = 'validate.type must be either json, form, multipart or stream';
-    assert(/json|form|multipart|stream/i.test(spec.validate.type), text);
+    pattern = /json|form|multipart|stream/i;
+
+    if (Array.isArray(spec.validate.type)) {
+      for (var i in spec.validate.type) {
+        assert(pattern.test(spec.validate.type[i]), text);
+      }
+    } else {
+      assert(pattern.test(spec.validate.type), text);
+    }
   }
 
   // default HTTP status code for failures
@@ -237,47 +253,88 @@ function makeBodyParser(spec) {
 
     var opts;
 
-    try {
-      switch (spec.validate.type) {
-        case 'json':
-          if (!this.request.is('json')) {
-            return this.throw(400, 'expected json');
-          }
+    var types = Array.isArray(spec.validate.type) ? spec.validate.type : [spec.validate.type];
+    var text = 'expected ' + joinTypes(types);
+    var bodyParsedSuccessfully = false;
+    var thrownError;
+    for (var i in types) {
+      try {
+        switch (types[i]) {
+          case 'json':
+            if (!this.request.is('json')) {
+              return this.throw(400, text);
+            }
 
-          opts = {
-            limit: spec.validate.maxBody
-          };
+            opts = {
+              limit: spec.validate.maxBody
+            };
 
-          this.request.body = yield parse.json(this, opts);
-          break;
+            this.request.body = yield parse.json(this, opts);
+            bodyParsedSuccessfully = true;
+            break;
 
-        case 'form':
-          if (!this.request.is('urlencoded')) {
-            return this.throw(400, 'expected x-www-form-urlencoded');
-          }
+          case 'form':
+            if (!this.request.is('urlencoded')) {
+              return this.throw(400, text);
+            }
 
-          opts = {
-            limit: spec.validate.maxBody
-          };
+            opts = {
+              limit: spec.validate.maxBody
+            };
 
-          this.request.body = yield parse.form(this, opts);
-          break;
+            this.request.body = yield parse.form(this, opts);
+            bodyParsedSuccessfully = true;
+            break;
 
-        case 'stream':
-        case 'multipart':
-          if (!this.request.is('multipart/*')) {
-            return this.throw(400, 'expected multipart');
-          }
+          case 'stream':
+          case 'multipart':
+            if (!this.request.is('multipart/*')) {
+              return this.throw(400, text);
+            }
 
-          opts = spec.validate.multipartOptions || {}; // TODO document this
-          opts.autoFields = true;
+            opts = spec.validate.multipartOptions || {}; // TODO document this
+            opts.autoFields = true;
 
-          this.request.parts = busboy(this, opts);
-          break;
+            this.request.parts = busboy(this, opts);
+            bodyParsedSuccessfully = true;
+            break;
+        }
+      } catch (err) {
+        thrownError = err;
       }
-    } catch (err) {
-      if (!spec.validate.continueOnError) return this.throw(err);
-      captureError(this, 'type', err);
+    }
+
+    if (bodyParsedSuccessfully === false) {
+      if (!spec.validate.continueOnError) return this.throw(thrownError);
+      captureError(this, 'type', thrownError);
+    }
+
+    function joinTypes(t) {
+      var result = [];
+      for (var i in t) {
+        switch (t[i]) {
+          case 'form':
+            result.push('x-www-form-urlencoded');
+            break;
+          case 'stream':
+            if (result.indexOf(t[i]) === -1) {
+              result.push('multipart');
+            }
+            break;
+          default:
+            if (result.indexOf(t[i]) === -1) {
+              result.push(t[i]);
+            }
+            break;
+        }
+      }
+      if (result.length === 1) {
+        return result[0];
+      } else if (result.length === 2) {
+        result = result.join(' or ');
+      } else {
+        return result.slice(0, result.length - 1).join(', ') + ', or ' + result[result.length - 1];
+      }
     }
 
     yield* next;
