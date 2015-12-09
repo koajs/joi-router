@@ -1,4 +1,10 @@
 
+3.0.0 / 2015-12-09
+==================
+
+ * BREAKING; support custom output validation per resp status code
+ * added; .route() now also supports an array of routes: #7 (martinmicunda)
+
 2.1.2 / 2015-10-10
 ==================
 
