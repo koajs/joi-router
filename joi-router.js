@@ -11,6 +11,7 @@ var parse = require('co-body');
 var Joi = require('joi');
 var slice = require('sliced');
 var delegate = require('delegates');
+var OutputValidator = require('./output-validator');
 
 module.exports = Router;
 
@@ -216,6 +217,10 @@ function checkValidators(spec) {
     assert(/json|form|multipart|stream/i.test(spec.validate.type), text);
   }
 
+  if (spec.validate.output) {
+    spec.validate._outputValidator = new OutputValidator(spec.validate.output);
+  }
+
   // default HTTP status code for failures
   if (!spec.validate.failure) {
     spec.validate.failure = 400;
@@ -325,9 +330,14 @@ function makeValidator(spec) {
 
     yield* next;
 
-    if (spec.validate.output) {
-      err = validateOutput(this, spec);
-      if (err) return this.throw(err);
+    if (spec.validate._outputValidator) {
+      debug('validating output');
+
+      err = spec.validate._outputValidator.validate(this);
+      if (err) {
+        err.status = 500;
+        return this.throw(err);
+      }
     }
   };
 }
@@ -372,27 +382,6 @@ function validateInput(prop, request, validate) {
   } else {
     request[prop] = res.value;
   }
-}
-
-/**
- * Validates output data with the defined validation schema.
- *
- * @param {koa context} ctx
- * @param {Object} spec
- * @api private
- */
-
-function validateOutput(ctx, spec) {
-  debug('validating output');
-
-  var res = Joi.validate(ctx.body, spec.validate.output);
-  if (res.error) {
-    res.error.status = 500;
-    return res.error;
-  }
-
-  // update request w/ the casted values
-  ctx.body = res.value;
 }
 
 /**

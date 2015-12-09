@@ -1024,62 +1024,393 @@ describe('koa-joi-router', function() {
     });
 
     describe('of output', function() {
-      describe('when body is', function() {
+      describe('status code patterns', function() {
+        it('allows single status codes', function() {
+          var r = router();
+          assert.doesNotThrow(function() {
+            r.route({
+              method: 'get',
+              path: '/single',
+              validate: {
+                output: {
+                  '200': { body: Joi.any().equal('asdr') }
+                }
+              },
+              handler: function*() {}
+            });
+          });
+        });
 
-        describe('valid', function() {
+        it('allows commas', function() {
+          var r = router();
+          assert.doesNotThrow(function() {
+            r.route({
+              method: 'get',
+              path: '/commas',
+              validate: {
+                output: {
+                  '201,202': { body: Joi.any().equal('band-reject') }
+                }
+              },
+              handler: function*() {}
+            });
+          });
+        });
+
+        it('allows spaces between status codes', function() {
+          var r = router();
+          assert.doesNotThrow(function() {
+            r.route({
+              method: 'post',
+              path: '/spaces',
+              validate: {
+                output: {
+                  '400, 401': { body: Joi.any().equal('low-pass') }
+                }
+              },
+              handler: function*() {}
+            });
+          });
+        });
+
+        it('allows ranges', function() {
+          var r = router();
+          assert.doesNotThrow(function() {
+            r.route({
+              method: 'post',
+              path: '/ranges',
+              validate: {
+                output: {
+                  '402-404': { body: Joi.any().equal('hi-pass') }
+                }
+              },
+              handler: function*() {}
+            });
+          });
+        });
+
+        it('allows combinations of integers, commas and ranges', function*() {
           var r = router();
 
-          r.route({
-            method: 'post',
-            path: '/a/b',
-            validate: {
-              output: Joi.number().max(10).required()
-            },
-            handler: function*() {
-              this.body = '3';
-            }
+          assert.doesNotThrow(function() {
+            r.route({
+              method: 'post',
+              path: '/combo/:status',
+              validate: {
+                output: {
+                  '500-502, 504 ,506-510,201': { body: Joi.any().equal('band-pass') }
+                }
+              },
+              handler: function*() {
+                this.status = parseInt(this.params.status, 10);
+
+                if (this.params.status === '200') {
+                  this.body = { 'pass-thru': 1 };
+                } else {
+                  this.body = 'band-pass';
+                }
+              }
+            });
           });
 
           var app = koa();
           app.use(r.middleware());
 
-          it('responds with the response body', function(done) {
-            test(app).post('/a/b').expect('3').expect(200, done);
-          });
+          yield test(app).post('/combo/500').expect('band-pass').expect(500).end();
+          yield test(app).post('/combo/501').expect('band-pass').expect(501).end();
+          yield test(app).post('/combo/504').expect('band-pass').expect(504).end();
+          yield test(app).post('/combo/506').expect('band-pass').expect(506).end();
+          yield test(app).post('/combo/510').expect('band-pass').expect(510).end();
+          yield test(app).post('/combo/201').expect('band-pass').expect(201).end();
+          yield test(app).post('/combo/200').expect(200).end();
         });
 
-        describe('missing', function() {
+        it('allows the "*" to represent all status codes', function*() {
           var r = router();
 
-          r.route({
-            method: 'post',
-            path: '/a/b',
-            validate: {
-              output: Joi.number().max(10).required()
-            },
-            handler: function*() {
-              this.status = 204;
-            }
+          assert.doesNotThrow(function() {
+            r.route({
+              method: 'get',
+              path: '/all',
+              validate: {
+                output: {
+                  '*': { body: Joi.any().equal('all') }
+                }
+              },
+              handler: function*() {
+                this.status = 201;
+                this.body = 'all';
+              }
+            });
           });
 
           var app = koa();
           app.use(r.middleware());
+          yield test(app).get('/all').expect('all').expect(201).end();
+        });
 
-          it('responds with a 500', function(done) {
-            test(app).post('/a/b').expect(500, done);
+        describe('throws on invalid pattern', function() {
+          var tests = [
+            { pattern: '100x' },
+            { pattern: 'x100' },
+            { pattern: '1,' },
+            { pattern: ',1' },
+            { pattern: '600' },
+            { pattern: '99' },
+            { pattern: '100-200-300' },
+            { pattern: '100-200-' },
+            { pattern: '100-' },
+            { pattern: '-100' },
+            { pattern: '-100-' },
+            { pattern: ',' },
+            { pattern: ',,' },
+            { pattern: '-' }
+          ];
+
+          tests.forEach(function(test) {
+            it(test.pattern, function(done) {
+              var r = router();
+              var output = {};
+              output[test.pattern] = { body: Joi.string() };
+
+              assert.throws(function() {
+                r.route({
+                  method: 'get',
+                  path: '/invalid',
+                  validate: { output: output },
+                  handler: function*() {}
+                });
+              });
+
+              done();
+            });
           });
         });
 
-        describe('invalid', function() {
+        it('throws on non-digit, comma, dash or space', function() {
+          var r = router();
+          assert.throws(function() {
+            r.route({
+              method: 'get',
+              path: '/invalid',
+              validate: {
+                output: {
+                  '%': { body: Joi.string() }
+                }
+              },
+              handler: function*() {}
+            });
+          });
+        });
+
+        it('throws if any status code patterns overlap', function() {
+          var r = router();
+
+          assert.throws(function() {
+            r.route({
+              method: 'get',
+              path: '/overlap/1',
+              validate: {
+                output: {
+                  '200': { body: Joi.any().equal('all') },
+                  '200, 201': { body: Joi.any().equal('all') }
+                }
+              },
+              handler: function*() {
+                this.body = 'all';
+              }
+            });
+          }, /200 <=> 200, 201/);
+
+          assert.throws(function() {
+            r.route({
+              method: 'get',
+              path: '/overlap/2',
+              validate: {
+                output: {
+                  '400': { body: Joi.any().equal('all') },
+                  '200-500': { body: Joi.any().equal('all') }
+                }
+              },
+              handler: function*() {
+                this.body = 'all';
+              }
+            });
+          }, /400 <=> 200-500/);
+
+          assert.throws(function() {
+            r.route({
+              method: 'get',
+              path: '/overlap/22',
+              validate: {
+                output: {
+                  '200-500': { body: Joi.any().equal('all') },
+                  '404': { body: Joi.any().equal('all') }
+                }
+              },
+              handler: function*() {
+                this.body = 'all';
+              }
+            });
+          }, /404 <=> 200-500/);
+
+          assert.throws(function() {
+            r.route({
+              method: 'get',
+              path: '/overlap/3',
+              validate: {
+                output: {
+                  '201, 204-208': { body: Joi.any().equal('all') },
+                  '200,204': { body: Joi.any().equal('all') }
+                }
+              },
+              handler: function*() {
+                this.body = 'all';
+              }
+            });
+          }, /201, 204-208 <=> 200,204/);
+
+          assert.throws(function() {
+            r.route({
+              method: 'get',
+              path: '/overlap/4',
+              validate: {
+                output: {
+                  '400, 404': { body: Joi.any().equal('all') },
+                  '200, 201-203, 206, 301-400': { body: Joi.any().equal('all') }
+                }
+              },
+              handler: function*() {
+                this.body = 'all';
+              }
+            });
+          }, /400, 404 <=> 200, 201-203, 206, 301-400/);
+
+          assert.throws(function() {
+            r.route({
+              method: 'get',
+              path: '/overlap/5',
+              validate: {
+                output: {
+                  '*': { body: Joi.any().equal('all') },
+                  '500': { body: Joi.any().equal('all') }
+                }
+              },
+              handler: function*() {
+                this.body = 'all';
+              }
+            });
+          }, /500 <=> \*/);
+        });
+
+        it('does not throw if status code patterns do not overlap', function() {
+          var r = router();
+          assert.doesNotThrow(function() {
+            r.route({
+              method: 'get',
+              path: '/overlap/1',
+              validate: {
+                output: {
+                  '200': { body: Joi.any().equal('all') },
+                  '201, 202': { body: Joi.any().equal('all') },
+                  '203-599': { body: Joi.any().equal('all') }
+                }
+              },
+              handler: function*() {}
+            });
+          });
+        });
+      });
+
+      describe('fields', function() {
+        it('throws when neither body nor headers is specified', function() {
+          var r = router();
+          assert.throws(function() {
+            r.route({
+              method: 'get',
+              path: '/',
+              validate: {
+                output: { '200': {} }
+              },
+              handler: function*() {}
+            });
+          });
+        });
+
+        it('does not throw if headers is specified but not body', function() {
+          var r = router();
+          assert.doesNotThrow(function() {
+            r.route({
+              method: 'get',
+              path: '/',
+              validate: {
+                output: {
+                  '200': { headers: { x: Joi.any() } }
+                }
+              },
+              handler: function*() {}
+            });
+          });
+        });
+
+        it('does not throw if body is specified but not headers', function() {
+          var r = router();
+          assert.doesNotThrow(function() {
+            r.route({
+              method: 'get',
+              path: '/',
+              validate: {
+                output: {
+                  '200': { body: { x: Joi.any() } }
+                }
+              },
+              handler: function*() {}
+            });
+          });
+        });
+      });
+
+      describe('body,', function() {
+        describe('when specified,', function() {
           var r = router();
 
           r.route({
             method: 'post',
             path: '/a/b',
             validate: {
-              output: Joi.object({
-                y: Joi.string().min(3)
-              })
+              output: {
+                '100-599': { body: { n: Joi.number().max(10).required() } }
+              }
+            },
+            handler: function*() {
+              this.body = { n: '3' };
+            }
+          });
+
+          r.route({
+            method: 'post',
+            path: '/body/missing',
+            validate: {
+              output: {
+                '200': { body: Joi.number().required() }
+              }
+            },
+            handler: function*() {
+              this.status = 200;
+            }
+          });
+
+          r.route({
+            method: 'post',
+            path: '/body/invalid',
+            validate: {
+              output: {
+                '*': {
+                  body: Joi.object({
+                    y: Joi.string().min(3)
+                  })
+                }
+              }
             },
             handler: function*() {
               this.body = {
@@ -1091,10 +1422,168 @@ describe('koa-joi-router', function() {
 
           var app = koa();
           app.use(r.middleware());
-          it('responds with a 500', function(done) {
-            test(app).post('/a/b').expect(500, done);
+
+          it('casts output values according to Joi rules', function*() {
+            // n should be cast to a number
+            yield test(app).post('/a/b').expect('{"n":3}').expect(200).end();
+          });
+
+          describe('but not included in response', function() {
+            it('responds with a 500', function*() {
+              yield test(app).post('/body/missing').expect(500).end();
+            });
+          });
+
+          describe('when output is invalid', function() {
+            it('responds with a 500', function*() {
+              yield test(app).post('/body/invalid').expect(500).end();
+            });
           });
         });
+
+        describe('when not specified,', function() {
+          var r = router();
+
+          r.route({
+            method: 'post',
+            path: '/notouch',
+            handler: function*() {
+              this.body = { n: '4' };
+            }
+          });
+
+          var app = koa();
+          app.use(r.middleware());
+
+          it('is not touched', function*() {
+            var o = yield test(app).post('/notouch').expect(200).end();
+            assert.strictEqual(o.text, '{"n":"4"}');
+          });
+        });
+      });
+
+      describe('headers', function() {
+        var headers = Joi.object({
+          n: Joi.number().max(10).required()
+        }).options({
+          allowUnknown: true
+        });
+
+        describe('when specified', function() {
+          var r = router();
+
+          r.route({
+            method: 'post',
+            path: '/headers/cast',
+            validate: {
+              output: {
+                '100-599': {
+                  headers: headers
+                }
+              }
+            },
+            handler: function*() {
+              this.set('n', '3');
+              this.body = 'RWC';
+            }
+          });
+
+          r.route({
+            method: 'post',
+            path: '/headers/missing',
+            validate: {
+              output: {
+                '200': {
+                  headers: headers
+                }
+              }
+            },
+            handler: function*() {
+              this.set('nope', 5);
+              this.body = 'RWC';
+            }
+          });
+
+          r.route({
+            method: 'post',
+            path: '/headers/invalid',
+            validate: {
+              output: {
+                '*': {
+                  headers: headers
+                }
+              }
+            },
+            handler: function*() {
+              this.set('n', 100);
+              this.body = 'RWC';
+            }
+          });
+
+          var app = koa();
+          app.use(r.middleware());
+
+          it('casts output values according to Joi rules', function*() {
+            // n should be cast to a number
+            yield test(app).post('/headers/cast').expect('n', 3).expect(200).end();
+          });
+
+          describe('but not included in response', function() {
+            it('responds with a 500', function*() {
+              yield test(app).post('/headers/missing').expect(500).end();
+            });
+          });
+
+          describe('when output is invalid', function() {
+            it('responds with a 500', function*() {
+              yield test(app).post('/headers/invalid').expect(500).end();
+            });
+          });
+        });
+
+        describe('when not specified', function() {
+          var r = router();
+
+          r.route({
+            method: 'post',
+            path: '/notouch',
+            handler: function*() {
+              this.set('n', '3');
+              this.body = 'RWC';
+            }
+          });
+
+          var app = koa();
+          app.use(r.middleware());
+
+          it('is not touched', function*() {
+            var o = yield test(app).post('/notouch').expect(200).end();
+            assert.strictEqual(o.header.n, '3');
+          });
+        });
+      });
+
+      it('does not occur when no status code matches', function*() {
+        var r = router();
+
+        r.route({
+          method: 'post',
+          path: '/notouch',
+          validate: {
+            output: {
+              '510': { body: { n: Joi.string() } }
+            }
+          },
+          handler: function*() {
+            this.body = { n: 4 };
+          }
+        });
+
+        var app = koa();
+        app.use(r.middleware());
+
+        var o = yield test(app).post('/notouch').expect(200).end();
+        assert.strictEqual(o.text, '{"n":4}');
       });
     });
 

@@ -9,7 +9,7 @@ Easy, rich and fully validated [koa](http://koajs.com) routing.
 #### Features:
 
 - built in input validation using [joi](https://github.com/hapijs/joi)
-- built in output validation using [joi](https://github.com/hapijs/joi)
+- built in [output validation](#validating-output) using [joi](https://github.com/hapijs/joi)
 - built in body parsing using [co-body](https://github.com/visionmedia/co-body) and [co-busboy](https://github.com/cojs/busboy)
 - built on the great [koa-router](https://github.com/alexmingoia/koa-router)
 - [exposed route definitions](#routes) for later analysis
@@ -41,13 +41,18 @@ public.route({
     body: {
       name: Joi.string().max(100),
       email: Joi.string().lowercase().email(),
-      password: Joi.string().max(100)
+      password: Joi.string().max(100),
+      _csrf: Joi.string().token()
     },
+    type: 'form',
     output: {
-      userId: Joi.string(),
-      name: Joi.string()
-    },
-    type: 'form'
+      200: {
+        body: {
+          userId: Joi.string(),
+          name: Joi.string()
+        }
+      }
+    }
   },
   handler: function*(){
     var user = yield createUser(this.request.body);
@@ -141,7 +146,7 @@ public.route({
     params: joiObject,
     body: joiObject,
     maxBody: '64kb',
-    output: joiObject,
+    output: { '400-600': { body: joiObject } },
     type: 'form',
     failure: 400,
     continueOnError: false
@@ -166,7 +171,7 @@ public.route({
   - `maxBody`: max incoming body size for forms or json input
   - `failure`: HTTP response code to use when input validation fails. default `400`
   - `type`: if validating the request body, this is **required**. either `form`, `json` or `multipart`
-  - `output`: output validator object which conforms to [Joi](https://github.com/hapijs/joi) validation. if output is invalid, an HTTP 500 is returned
+  - `output`: see [output validation](#validating-output)
   - `continueOnError`: if validation fails, this flags determines if `koa-joi-router` should [continue processing](#handling-errors) the middleware stack or stop and respond with an error immediately. useful when you want your route to handle the error response. default `false`
 - `handler`: **required** GeneratorFunction
 - `meta`: meta data about this route. `koa-joi-router` ignores this but stores it along with all other route data
@@ -335,8 +340,8 @@ admin.route({
 
 ## Handling non-validated input
 
-_Note:_ if you do not specify a value for `validate.type` then the
-incoming payload will not be parsed or validated. It is then up to you to
+_Note:_ if you do not specify a value for `validate.type`, the
+incoming payload will not be parsed or validated. It is up to you to
 parse the incoming data however you see fit.
 
 ```js
@@ -348,6 +353,132 @@ admin.route({
     console.log(this.request.body, this.request.parts); // undefined undefined
   }
 })
+```
+
+## Validating output
+
+Validating the output body and/or headers your service generates on a
+per-status-code basis is supported. This comes in handy when contracts
+between your API and client are strict e.g. any change in response
+schema could break your downstream clients. In a very active codebase, this
+feature buys you stability. If the output is invalid, an HTTP status 500
+will be used.
+
+Let's look at some examples:
+
+### Validation of an individual status code
+
+```js
+router.route({
+  method: 'post',
+  path: '/user',
+  validate: {
+    output: {
+      200: { // individual status code
+        body: {
+          userId: Joi.string(),
+          name: Joi.string()
+        }
+      }
+    }
+  },
+  handler: handler
+});
+```
+
+### Validation of multiple individual status codes
+
+```js
+router.route({
+  method: 'post',
+  path: '/user',
+  validate: {
+    output: {
+      '200,201': { // multiple individual status codes
+        body: {
+          userId: Joi.string(),
+          name: Joi.string()
+        }
+      }
+    }
+  },
+  handler: handler
+});
+```
+
+### Validation of a status code range
+
+```js
+router.route({
+  method: 'post',
+  path: '/user',
+  validate: {
+    output: {
+      '200-299': { // status code range
+        body: {
+          userId: Joi.string(),
+          name: Joi.string()
+        }
+      }
+    }
+  },
+  handler: handler
+});
+```
+
+### Validation of multiple individual status codes and ranges combined
+
+You are free to mix and match ranges and individual status codes.
+
+```js
+router.route({
+  method: 'post',
+  path: '/user',
+  validate: {
+    output: {
+      '200,201,300-600': { // mix it up
+        body: {
+          userId: Joi.string(),
+          name: Joi.string()
+        }
+      }
+    }
+  },
+  handler: handler
+});
+```
+
+### Validation of output headers
+
+Validating your output headers is also supported via the `headers` property:
+
+```js
+router.route({
+  method: 'post',
+  path: '/user',
+  validate: {
+    output: {
+      '200,201': {
+        body: {
+          userId: Joi.string(),
+          name: Joi.string()
+        },
+        headers: Joi.object({ // validate headers too
+          authorization: Joi.string().required()
+        }).options({
+          allowUnknown: true
+        })
+      },
+      '500-600': {
+        body: { // this rule only runs when a status 500 - 600 is used
+          error_code: Joi.number(),
+          error_msg: Joi.string()
+        }
+      }
+    }
+  },
+  handler: handler
+});
 ```
 
 ## Router instance properties
