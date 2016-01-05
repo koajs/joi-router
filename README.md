@@ -96,7 +96,7 @@ koa.use(auth.middleware());
 
 It is **HIGHLY RECOMMENDED** you use this bundled version of Joi
 to avoid bugs related to passing an object created with a different
-relase of Joi into the router.
+release of Joi into the router.
 
 ```js
 var koa = require('koa');
