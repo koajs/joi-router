@@ -157,7 +157,7 @@ function checkHandler(spec) {
     spec.handler = [spec.handler];
   }
 
-  return spec.handler.forEach(isGeneratorFunction);
+  return flatten(spec.handler).forEach(isGeneratorFunction);
 }
 
 /**
@@ -402,13 +402,16 @@ function validateInput(prop, request, validate) {
  *      console.log(this.body);
  *    })
  *
- *    admin.post('/account', function *(){
- *       // ...
- *    });
+ *    function *commonHandler(){
+ *      // ...
+ *    }
+ *    admin.post('/account', [commonHandler, function *(){
+ *      // ...
+ *    }]);
  *
  * @param {String} path
  * @param {Object} [config] optional
- * @param {GeneratorFunction} handler
+ * @param {GeneratorFunction|GeneratorFunction[]} handler(s)
  * @return {App} self
  */
 
@@ -416,22 +419,20 @@ methods.forEach(function(method) {
   method = method.toLowerCase();
 
   Router.prototype[method] = function(path) {
-    // apth, handler1, hadnler2, ...
-    // path, config, hadnler1
-    // path config, handler1, handler2, ...
+    // path, handler1, handler2, ...
+    // path, config, handler1
+    // path, config, handler1, handler2, ...
+    // path, config, [handler1, handler2], handler3, ...
 
     var fns;
     var config;
 
-    switch (typeof arguments[1]) {
-      case 'function':
-        config = {};
-        fns = slice(arguments, 1);
-        break;
-      case 'object':
-        config = arguments[1];
-        fns = slice(arguments, 2);
-        break;
+    if (typeof arguments[1] === 'function' || Array.isArray(arguments[1])) {
+      config = {};
+      fns = slice(arguments, 1);
+    } else if (typeof arguments[1] === 'object') {
+      config = arguments[1];
+      fns = slice(arguments, 2);
     }
 
     var spec = {
