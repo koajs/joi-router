@@ -2,7 +2,7 @@
 
 var assert = require('assert');
 var Joi = require('joi');
-var helpMsg = ' -> see: https://github.com/pebble/koa-joi-router/#validating-output';
+var helpMsg = ' -> see: https://github.com/koajs/joi-router/#validating-output';
 
 module.exports = OutputValidationRule;
 
