@@ -1,9 +1,9 @@
-#koa-joi-router
+#joi-router
 
 Easy, rich and fully validated [koa](http://koajs.com) routing.
 
-[![Build Status](https://travis-ci.org/pebble/koa-joi-router.svg?branch=master)](https://travis-ci.org/pebble/koa-joi-router)
-[![Coverage Status](https://img.shields.io/coveralls/pebble/koa-joi-router.svg)](https://coveralls.io/r/pebble/koa-joi-router)
+[![Build Status](https://travis-ci.org/koajs/joi-router.svg?branch=master)](https://travis-ci.org/koajs/joi-router)
+[![Coverage Status](https://img.shields.io/coveralls/koajs/joi-router.svg)](https://coveralls.io/r/koajs/joi-router)
 [![npm](http://img.shields.io/npm/v/koa-joi-router.svg)](https://www.npmjs.org/package/koa-joi-router)
 
 #### Features:
@@ -585,8 +585,8 @@ admin.route({
 
 ## Sponsored by
 
-[Pebble Technology!](https://pebble.com)
+[Pebble Technology!](https://www.pebble.com)
 
 ## LICENSE
 
-[MIT](https://github.com/pebble/koa-joi-router/blob/master/LICENSE)
+[MIT](https://github.com/koajs/joi-router/blob/master/LICENSE)
