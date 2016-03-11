@@ -542,6 +542,31 @@ admin.route({
 });
 ```
 
+## Nested middleware support
+
+You may want to bundle and nest middleware in different ways for reuse and
+organization purposes.
+
+```js
+var router = require('koa-joi-router');
+var admin = router();
+var commonMiddleware = [ yourMiddleware, someOtherMiddleware ];
+admin.route({
+  path: '/',
+  method: ['POST', 'PUT'],
+  handler: [ commonMiddleware, yourHandler ]
+});
+```
+
+This also works with the .get(),post(),put(),del(), etc HTTP method helpers.
+
+```js
+var router = require('koa-joi-router');
+var admin = router();
+var commonMiddleware = [ yourMiddleware, someOtherMiddleware ];
+admin.get('/', commonMiddleware, yourHandler);
+```
+
 ## Handling errors
 
 By default, `koa-joi-router` stops processing the middleware stack when either
