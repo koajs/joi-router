@@ -11,6 +11,7 @@ var parse = require('co-body');
 var Joi = require('joi');
 var slice = require('sliced');
 var delegate = require('delegates');
+var clone = require('clone');
 var OutputValidator = require('./output-validator');
 
 module.exports = Router;
@@ -113,8 +114,8 @@ Router.prototype._addRoute = function addRoute(spec) {
   debug('add %s "%s"', spec.method, spec.path);
 
   var bodyParser = makeBodyParser(spec);
+  var specExposer = makeSpecExposer(spec);
   var validator = makeValidator(spec);
-  var specExposer = exposeSpec(spec);
   var handlers = flatten(spec.handler);
 
   var args = [
@@ -351,9 +352,10 @@ function makeValidator(spec) {
  * @return {GeneratorFunction}
  * @api private
  */
-function exposeSpec(spec) {
+function makeSpecExposer(spec) {
+  const defn = clone(spec);
   return function* specExposer(next) {
-    this.state.route = new Object(spec);
+    this.state.route = defn;
     yield* next;
   };
 }

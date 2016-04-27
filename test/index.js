@@ -243,6 +243,49 @@ describe('koa-joi-router', function() {
       assert.equal(2, r.routes.length);
       done();
     });
+
+    it('exposes the route definition to the handler context', function(done) {
+      var r = router();
+
+      r.route({
+        method: 'GET',
+        path: '/a',
+        validate: {
+          query: Joi.object().keys({
+            q: Joi.number().min(5).max(8).required()
+          }).options({
+            allowUnknown: true
+          })
+        },
+        handler: function* handler() {
+          this.status = 204;
+
+          try {
+            assert.equal('object', typeof this.state.route);
+
+            assert(Array.isArray(this.state.route.method),
+              'route.method should be an array');
+
+            assert.equal(1, this.state.route.method.length);
+            assert.equal('get', this.state.route.method[0]);
+            assert.equal('/a', this.state.route.path);
+            assert(this.state.route.validate.query, 'missing spec.validate.query');
+            assert('function', typeof this.state.route.handler);
+            assert.notEqual(handler, this.state.route.handler);
+          } catch (err) {
+            this.status = 500;
+            this.body = err.stack;
+          }
+        }
+      });
+
+      var app = koa();
+      app.use(r.middleware());
+      test(app).get('/a?q=6').expect(204, function(err, res) {
+        if (err) console.error(res.text);
+        done(err);
+      });
+    });
   });
 
   describe('request.params', function() {
