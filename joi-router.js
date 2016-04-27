@@ -114,11 +114,13 @@ Router.prototype._addRoute = function addRoute(spec) {
 
   var bodyParser = makeBodyParser(spec);
   var validator = makeValidator(spec);
+  var specExposer = exposeSpec(spec);
   var handlers = flatten(spec.handler);
 
   var args = [
     spec.path,
     prepareRequest,
+    specExposer,
     bodyParser,
     validator
   ].concat(handlers);
@@ -340,6 +342,21 @@ function makeValidator(spec) {
       }
     }
   };
+}
+
+/**
+ * Exposes route spec.
+ *
+ * @param {Object} spec
+ * @return {GeneratorFunction}
+ * @api private
+ */
+function exposeSpec(spec)
+{
+  return function* specExposer(next) {
+    this.state.route = new Object(spec);
+    yield* next;
+  }
 }
 
 /**
