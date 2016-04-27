@@ -255,6 +255,23 @@ app.use(public.middleware()); // wired up
 app.listen();
 ```
 
+## Additions to ctx.state
+
+The route definition for the currently matched route is available
+via `ctx.state.route`. This object is not the exact same route
+definition object which was passed into koa-joi-router, nor is it
+used internally - any changes made to this object will
+not have an affect on your running application but is available
+to meet your introspection needs.
+
+```js
+var router = require('koa-joi-router');
+var public = router();
+public.get('/hello', function*(){
+  console.log(this.state.route);
+});
+```
+
 ## Additions to ctx.request
 
 When using the `validate.type` option, `koa-joi-router` adds a few new properties
