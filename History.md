@@ -1,4 +1,11 @@
 
+3.1.0 / 2016-04-27
+==================
+
+ * added; route definition introspection via ctx.state.route #16 [BrainsoftLtd](https://github.com/BrainsoftLtd)
+ * added; nested middleware support #14 [reyawn](https://github.com/reyawn)
+ * docs; fix typo #13 [simplyianm](https://github.com/simplyianm)
+
 3.0.0 / 2015-12-09
 ==================
 
