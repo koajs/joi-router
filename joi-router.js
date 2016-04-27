@@ -353,7 +353,7 @@ function makeValidator(spec) {
  * @api private
  */
 function makeSpecExposer(spec) {
-  const defn = clone(spec);
+  var defn = clone(spec);
   return function* specExposer(next) {
     this.state.route = defn;
     yield* next;
