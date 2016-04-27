@@ -351,12 +351,11 @@ function makeValidator(spec) {
  * @return {GeneratorFunction}
  * @api private
  */
-function exposeSpec(spec)
-{
+function exposeSpec(spec) {
   return function* specExposer(next) {
     this.state.route = new Object(spec);
     yield* next;
-  }
+  };
 }
 
 /**
