@@ -1,9 +1,8 @@
 language: node_js
 matrix:
   include:
-    - node_js: "0.12"
-      env: MOCHA_OPTS=--harmony-generators
-    - node_js: "iojs"
+    - node_js: "4"
+    - node_js: "6"
 
 script: "make test-travis"
 after_script: "npm install coveralls@2.11.1 && cat ./coverage/lcov.info | coveralls"
