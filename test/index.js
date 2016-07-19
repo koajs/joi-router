@@ -458,7 +458,7 @@ describe('koa-joi-router', function() {
               .type('json')
               .send(invalid)
               .expect(200)
-              .expect('Unexpected token {', done);
+              .expect('Unexpected token { in JSON at position 1', done);
             });
           });
         });
