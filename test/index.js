@@ -1911,6 +1911,12 @@ describe('koa-joi-router', function() {
         this.body = 'it' + this.msg;
       });
 
+      r.get('/testparam/:id', {
+        validate: { params: { id: Joi.string().min(5) } }
+      }, function*() {
+        this.body = 'it' + this.msg;
+      });
+
       r.prefix('/user');
 
       app.use(r.middleware());
@@ -1935,6 +1941,11 @@ describe('koa-joi-router', function() {
       .end();
 
       yield test(app).get('/user/itworks/')
+      .expect('itworks')
+      .expect(200)
+      .end();
+
+      yield test(app).get('/user/testparam/itworks')
       .expect('itworks')
       .expect(200)
       .end();
