@@ -392,10 +392,11 @@ function validateInput(prop, request, validate) {
   }
 
   // update our request w/ the casted values
-  if (prop === 'header') {
+  if (prop === 'header' || prop === 'query') {
     // request.header is getter only, cannot set it
+    // setting request.query causes casting back to strings which don't want
     Object.keys(res.value).forEach(function(key) {
-      request.header[key] = res.value[key];
+      request[prop][key] = res.value[key];
     });
   } else {
     request[prop] = res.value;

@@ -773,6 +773,49 @@ describe('koa-joi-router', function() {
           });
         });
       });
+
+      it('retains the casted values in the route (gh-6, gh-21)', function(done) {
+        var r = router();
+
+        r.route({
+          method: 'get',
+          path: '/a',
+          validate: {
+            query: Joi.object().keys({
+              d: Joi.date().required(),
+              n: Joi.number().required(),
+              b: Joi.boolean().required()
+            })
+          },
+          handler: function*() {
+            this.body = {
+              query: this.request.query,
+              date: {
+                type: typeof this.request.query.d,
+                instance: this.request.query.d instanceof Date
+              },
+              number: {
+                type: typeof this.request.query.n
+              },
+              bool: {
+                type: typeof this.request.query.b
+              }
+            };
+          }
+        });
+
+        var app = koa();
+        app.use(r.middleware());
+
+        test(app).get('/a?d=7-27-2016&n=34&b=true')
+        .end(function(err, res) {
+          assert.equal('object', res.body.date.type);
+          assert.equal(true, res.body.date.instance);
+          assert.equal('number', res.body.number.type);
+          assert.equal('boolean', res.body.bool.type);
+          done(err);
+        });
+      });
     });
 
     describe('of params', function() {
