@@ -504,7 +504,7 @@ router.route({
 
 Each router exposes it's route definitions through it's `routes` property.
 This is helpful when you'd like to introspect the previous definitions and
-take action e.g. to generate API documentation etc.
+take action e.g. to [generate API documentation](https://github.com/a-s-o/koa-docs) etc.
 
 ```js
 var router = require('koa-joi-router');
