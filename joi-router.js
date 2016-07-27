@@ -322,7 +322,7 @@ function makeValidator(spec) {
       var prop = props[i];
 
       if (spec.validate[prop]) {
-        err = validateInput(prop, this.request, spec.validate);
+        err = validateInput(prop, this, spec.validate);
 
         if (err) {
           if (!spec.validate.continueOnError) return this.throw(err);
@@ -381,9 +381,10 @@ function* prepareRequest(next) {
  * @api private
  */
 
-function validateInput(prop, request, validate) {
+function validateInput(prop, ctx, validate) {
   debug('validating %s', prop);
 
+  var request = ctx.request;
   var res = Joi.validate(request[prop], validate[prop]);
 
   if (res.error) {
@@ -392,14 +393,18 @@ function validateInput(prop, request, validate) {
   }
 
   // update our request w/ the casted values
-  if (prop === 'header' || prop === 'query') {
-    // request.header is getter only, cannot set it
-    // setting request.query causes casting back to strings which don't want
-    Object.keys(res.value).forEach(function(key) {
-      request[prop][key] = res.value[key];
-    });
-  } else {
-    request[prop] = res.value;
+  switch (prop) {
+    case 'header': // request.header is getter only, cannot set it
+    case 'query': // setting request.query directly causes casting back to strings
+      Object.keys(res.value).forEach(function(key) {
+        request[prop][key] = res.value[key];
+      });
+      break;
+    case 'params':
+      request.params = ctx.params = res.value;
+      break;
+    default:
+      request[prop] = res.value;
   }
 }
 

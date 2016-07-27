@@ -903,6 +903,63 @@ describe('koa-joi-router', function() {
           });
         });
       });
+
+      it('retains the casted values in the route', function(done) {
+        var r = router();
+
+        r.route({
+          method: 'get',
+          path: '/:field/:d/:n/:b',
+          validate: {
+            params: Joi.object().keys({
+              d: Joi.date().required(),
+              n: Joi.number().required(),
+              b: Joi.boolean().required(),
+              field: Joi.any()
+            })
+          },
+          handler: function*() {
+            var params = this.request.params.field === 'request' ?
+              this.request.params :
+              this.params;
+
+            this.body = {
+              params: params,
+              date: {
+                type: typeof params.d,
+                instance: params.d instanceof Date
+              },
+              number: {
+                type: typeof params.n
+              },
+              bool: {
+                type: typeof params.b
+              }
+            };
+          }
+        });
+
+        var app = koa();
+        app.use(r.middleware());
+
+        test(app).get('/request/7-27-2016/34/true')
+        .end(function(err, res) {
+          if (err) return done(err);
+          assert.equal('object', res.body.date.type);
+          assert.equal(true, res.body.date.instance);
+          assert.equal('number', res.body.number.type);
+          assert.equal('boolean', res.body.bool.type);
+
+          test(app).get('/params/7-27-2016/34/true')
+          .end(function(err, res) {
+            assert.equal('object', res.body.date.type);
+            assert.equal(true, res.body.date.instance);
+            assert.equal('number', res.body.number.type);
+            assert.equal('boolean', res.body.bool.type);
+            done(err);
+          });
+        });
+      });
     });
 
     describe('of headers', function() {
