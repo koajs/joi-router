@@ -33,7 +33,7 @@
     "co-busboy": "1.3.1",
     "debug": "2.2.0",
     "delegates": "1.0.0",
-    "flatten": "0.0.1",
+    "flatten": "1.0.2",
     "is-gen-fn": "0.0.1",
     "joi": "9.0.0",
     "koa-router": "git+https://github.com/aheckmann/koa-router.git#f0c60d374b5903f",
