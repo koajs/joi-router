@@ -1,4 +1,19 @@
 
+4.0.0 / 2016-07-28
+==================
+
+ * fixed; params casting #26
+ * changed; retain casted query values #25
+ * removed; support for node < 4.x
+ * use aheckmann/koa-router fork with params bugfix #24
+ * updated; to Joi 9.0.4
+ * updated; to co-body to 4.2.0
+ * updated; to co-busboy to 1.3.1
+ * updated; to delegates to 1.0.0
+ * updated; to flatten to 1.0.2
+ * updated; to methods to 1.1.2
+ * docs; add koa-docs link
+
 3.1.1 / 2016-04-27
 ==================
 
