@@ -44,9 +44,9 @@
     "eslint": "^1.1.0",
     "eslint-config-pebble": "^1.2.0",
     "eslint-plugin-standard": "^1.1.0",
-    "istanbul-harmony": "^0.3.0",
+    "istanbul": "^0.4.0",
     "koa": "^1.0.0",
-    "mocha": "^1.21.4",
+    "mocha": "^3.0.2",
     "co-mocha": "^1.1.0",
     "co-supertest": "^0.0.8",
     "supertest": "^0.15.0"
