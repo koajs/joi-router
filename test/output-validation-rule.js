@@ -1,15 +1,15 @@
 'use strict';
 
-var Rule = require('../output-validation-rule');
-var Joi = require('joi');
-var assert = require('assert');
+const Rule = require('../output-validation-rule');
+const Joi = require('joi');
+const assert = require('assert');
 
-describe('OutputValidationRule', function() {
-  describe('.overlaps()', function() {
-    it('properly detects when rules do not overlap', function() {
-      var spec = { body: { a: Joi.any().required() } };
-      var a = new Rule('200', spec);
-      var b = new Rule('201', spec);
+describe('OutputValidationRule', () => {
+  describe('.overlaps()', () => {
+    it('properly detects when rules do not overlap', () => {
+      const spec = { body: { a: Joi.any().required() } };
+      const a = new Rule('200', spec);
+      const b = new Rule('201', spec);
       assert.strictEqual(false, a.overlaps(b));
     });
   });

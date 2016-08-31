@@ -1,7 +1,7 @@
 'use strict';
 
-var OutputValidationRule = require('./output-validation-rule');
-var assert = require('assert');
+const OutputValidationRule = require('./output-validation-rule');
+const assert = require('assert');
 
 module.exports = OutputValidator;
 
@@ -15,20 +15,21 @@ function OutputValidator(output) {
 }
 
 OutputValidator.tokenizeRules = function tokenizeRules(output) {
-  return Object.keys(output).map(function createRule(status) {
+  function createRule(status) {
     return new OutputValidationRule(status, output[status]);
-  });
+  }
+  return Object.keys(output).map(createRule);
 };
 
 OutputValidator.assertNoOverlappingStatusRules =
 function assertNoOverlappingStatusRules(rules) {
-  for (var i = 0; i < rules.length; ++i) {
-    var ruleA = rules[i];
+  for (let i = 0; i < rules.length; ++i) {
+    const ruleA = rules[i];
 
-    for (var j = 0; j < rules.length; ++j) {
+    for (let j = 0; j < rules.length; ++j) {
       if (i === j) continue;
 
-      var ruleB = rules[j];
+      const ruleB = rules[j];
       if (ruleA.overlaps(ruleB)) {
         throw new Error(
           'Output validation rules may not overlap: ' + ruleA + ' <=> ' + ruleB
@@ -41,8 +42,8 @@ function assertNoOverlappingStatusRules(rules) {
 OutputValidator.prototype.validate = function(ctx) {
   assert(ctx, 'missing request context!');
 
-  for (var i = 0; i < this.rules.length; ++i) {
-    var rule = this.rules[i];
+  for (let i = 0; i < this.rules.length; ++i) {
+    const rule = this.rules[i];
     if (rule.matches(ctx)) {
       return rule.validateOutput(ctx);
     }

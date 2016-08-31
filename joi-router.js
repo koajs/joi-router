@@ -1,18 +1,18 @@
 'use strict';
 
-var assert = require('assert');
-var debug = require('debug')('koa-joi-router');
-var isGenFn = require('is-gen-fn');
-var flatten = require('flatten');
-var methods = require('methods');
-var KoaRouter = require('koa-router');
-var busboy = require('co-busboy');
-var parse = require('co-body');
-var Joi = require('joi');
-var slice = require('sliced');
-var delegate = require('delegates');
-var clone = require('clone');
-var OutputValidator = require('./output-validator');
+const assert = require('assert');
+const debug = require('debug')('koa-joi-router');
+const isGenFn = require('is-gen-fn');
+const flatten = require('flatten');
+const methods = require('methods');
+const KoaRouter = require('koa-router');
+const busboy = require('co-busboy');
+const parse = require('co-body');
+const Joi = require('joi');
+const slice = require('sliced');
+const delegate = require('delegates');
+const clone = require('clone');
+const OutputValidator = require('./output-validator');
 
 module.exports = Router;
 
@@ -89,7 +89,7 @@ Router.prototype.middleware = function middleware() {
 
 Router.prototype.route = function route(spec) {
   if (Array.isArray(spec)) {
-    for (var i = 0; i < spec.length; i++) {
+    for (let i = 0; i < spec.length; i++) {
       this._addRoute(spec[i]);
     }
   } else {
@@ -113,12 +113,12 @@ Router.prototype._addRoute = function addRoute(spec) {
 
   debug('add %s "%s"', spec.method, spec.path);
 
-  var bodyParser = makeBodyParser(spec);
-  var specExposer = makeSpecExposer(spec);
-  var validator = makeValidator(spec);
-  var handlers = flatten(spec.handler);
+  const bodyParser = makeBodyParser(spec);
+  const specExposer = makeSpecExposer(spec);
+  const validator = makeValidator(spec);
+  const handlers = flatten(spec.handler);
 
-  var args = [
+  const args = [
     spec.path,
     prepareRequest,
     specExposer,
@@ -126,9 +126,9 @@ Router.prototype._addRoute = function addRoute(spec) {
     validator
   ].concat(handlers);
 
-  var router = this.router;
+  const router = this.router;
 
-  spec.method.forEach(function(method) {
+  spec.method.forEach((method) => {
     router[method].apply(router, args);
   });
 };
@@ -143,7 +143,7 @@ Router.prototype._addRoute = function addRoute(spec) {
 Router.prototype._validateRouteSpec = function validateRouteSpec(spec) {
   assert(spec, 'missing spec');
 
-  var ok = typeof spec.path === 'string' || spec.path instanceof RegExp;
+  const ok = typeof spec.path === 'string' || spec.path instanceof RegExp;
   assert(ok, 'invalid route path');
 
   checkHandler(spec);
@@ -193,7 +193,7 @@ function checkMethods(spec) {
     throw new Error('missing route method');
   }
 
-  spec.method.forEach(function(method, i) {
+  spec.method.forEach((method, i) => {
     assert(typeof method === 'string', 'route method must be a string');
     spec.method[i] = method.toLowerCase();
   });
@@ -209,7 +209,7 @@ function checkMethods(spec) {
 function checkValidators(spec) {
   if (!spec.validate) return;
 
-  var text;
+  let text;
   if (spec.validate.body) {
     text = 'validate.type must be declared when using validate.body';
     assert(/json|form/.test(spec.validate.type), text);
@@ -242,7 +242,7 @@ function makeBodyParser(spec) {
   return function* parsePayload(next) {
     if (!(spec.validate && spec.validate.type)) return yield* next;
 
-    var opts;
+    let opts;
 
     try {
       switch (spec.validate.type) {
@@ -311,15 +311,15 @@ function captureError(ctx, type, err) {
  */
 
 function makeValidator(spec) {
-  var props = 'header query params body'.split(' ');
+  const props = 'header query params body'.split(' ');
 
   return function* validator(next) {
-    var err;
+    let err;
 
     if (!spec.validate) return yield* next;
 
-    for (var i = 0; i < props.length; ++i) {
-      var prop = props[i];
+    for (let i = 0; i < props.length; ++i) {
+      const prop = props[i];
 
       if (spec.validate[prop]) {
         err = validateInput(prop, this, spec.validate);
@@ -353,7 +353,7 @@ function makeValidator(spec) {
  * @api private
  */
 function makeSpecExposer(spec) {
-  var defn = clone(spec);
+  const defn = clone(spec);
   return function* specExposer(next) {
     this.state.route = defn;
     yield* next;
@@ -384,8 +384,8 @@ function* prepareRequest(next) {
 function validateInput(prop, ctx, validate) {
   debug('validating %s', prop);
 
-  var request = ctx.request;
-  var res = Joi.validate(request[prop], validate[prop]);
+  const request = ctx.request;
+  const res = Joi.validate(request[prop], validate[prop]);
 
   if (res.error) {
     res.error.status = validate.failure;
@@ -396,7 +396,7 @@ function validateInput(prop, ctx, validate) {
   switch (prop) {
     case 'header': // request.header is getter only, cannot set it
     case 'query': // setting request.query directly causes casting back to strings
-      Object.keys(res.value).forEach(function(key) {
+      Object.keys(res.value).forEach((key) => {
         request[prop][key] = res.value[key];
       });
       break;
@@ -439,7 +439,7 @@ function validateInput(prop, ctx, validate) {
  * @return {App} self
  */
 
-methods.forEach(function(method) {
+methods.forEach((method) => {
   method = method.toLowerCase();
 
   Router.prototype[method] = function(path) {
@@ -448,8 +448,8 @@ methods.forEach(function(method) {
     // path, config, handler1, handler2, ...
     // path, config, [handler1, handler2], handler3, ...
 
-    var fns;
-    var config;
+    let fns;
+    let config;
 
     if (typeof arguments[1] === 'function' || Array.isArray(arguments[1])) {
       config = {};
@@ -459,13 +459,13 @@ methods.forEach(function(method) {
       fns = slice(arguments, 2);
     }
 
-    var spec = {
+    const spec = {
       path: path,
       method: method,
       handler: fns
     };
 
-    Object.keys(config).forEach(function(key) {
+    Object.keys(config).forEach((key) => {
       spec[key] = config[key];
     });
 

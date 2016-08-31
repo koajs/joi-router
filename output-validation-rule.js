@@ -1,8 +1,8 @@
 'use strict';
 
-var assert = require('assert');
-var Joi = require('joi');
-var helpMsg = ' -> see: https://github.com/koajs/joi-router/#validating-output';
+const assert = require('assert');
+const Joi = require('joi');
+const helpMsg = ' -> see: https://github.com/koajs/joi-router/#validating-output';
 
 module.exports = OutputValidationRule;
 
@@ -52,8 +52,8 @@ OutputValidationRule.prototype.overlaps = function overlaps(ruleB) {
  */
 
 OutputValidationRule.prototype.matches = function matches(ctx) {
-  for (var i = 0; i < this.ranges.length; ++i) {
-    var range = this.ranges[i];
+  for (let i = 0; i < this.ranges.length; ++i) {
+    const range = this.ranges[i];
     if (ctx.status >= range.lower && ctx.status <= range.upper) {
       return true;
     }
@@ -67,7 +67,7 @@ OutputValidationRule.prototype.matches = function matches(ctx) {
  */
 
 OutputValidationRule.prototype.validateOutput = function validateOutput(ctx) {
-  var result;
+  let result;
 
   if (this.spec.headers) {
     result = Joi.validate(ctx.response.headers, this.spec.headers);
@@ -94,6 +94,7 @@ OutputValidationRule.prototype.validateOutput = function validateOutput(ctx) {
  */
 
 OutputValidationRule.overlaps = function overlaps(a, b) {
+  /* eslint-disable prefer-arrow-callback */
   return a.ranges.some(function checkRangeA(rangeA) {
     return b.ranges.some(function checkRangeB(rangeB) {
       if (rangeA.upper >= rangeB.lower && rangeA.lower <= rangeB.upper) {
@@ -102,6 +103,7 @@ OutputValidationRule.overlaps = function overlaps(a, b) {
       return false;
     });
   });
+  /* eslint-enable prefer-arrow-callback */
 };
 
 // helpers
@@ -115,11 +117,11 @@ function rangify(rule) {
     return { lower: 0, upper: Infinity };
   }
 
-  var parts = rule.split('-');
+  const parts = rule.split('-');
   assert(parts.length && parts.length < 3, 'invalid status code: ' + rule + helpMsg);
 
-  var lower = parts[0];
-  var upper = parts.length === 2 ? parts[1] : lower;
+  const lower = parts[0];
+  const upper = parts.length === 2 ? parts[1] : lower;
 
   validateCode(lower);
   validateCode(upper);

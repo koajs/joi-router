@@ -8,7 +8,7 @@ lint:
 	@ find . -name "*.js" \
 		-not -path "./node_modules/*" \
 		-not -path "./coverage/*" -print0 | \
-		xargs -0 ./node_modules/eslint/bin/eslint.js
+		xargs -0 ./node_modules/eslint/bin/eslint.js --quiet
 
 test-cov: lint
 	@NODE_ENV=test node $(MOCHA_OPTS) \
