@@ -7,10 +7,10 @@ function MiddlewareGenerator() {
 }
 
 MiddlewareGenerator.prototype.generate = function() {
-  var i = this.count += 1;
-  var self = this;
-  return function*(next) {
-    var expectedBody = (i - 1) + ' out of ' + self.count;
+  const i = this.count += 1;
+  const self = this;
+  return function* (next) {
+    const expectedBody = (i - 1) + ' out of ' + self.count;
     if (i > 1 && this.body !== expectedBody) {
       this.throw(400, 'Handler executed out-of-order');
     }
