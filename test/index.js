@@ -4,7 +4,7 @@ require('co-mocha');
 require('co-supertest');
 
 const router = require('../');
-const koa = require('koa');
+const Koa = require('koa');
 const assert = require('assert');
 const request = require('supertest');
 const http = require('http');
@@ -14,7 +14,7 @@ const slice = require('sliced');
 const MiddlewareGenerator = require('./test-utils').MiddlewareGenerator;
 
 function makeRouterApp(router) {
-  const app = koa();
+  const app = new Koa();
   app.use(router.middleware());
   return app;
 }
@@ -75,7 +75,7 @@ describe('koa-joi-router', () => {
           assert.throws(() => {
             router().route({
               path: '/',
-              handler: function* () {}
+              handler: () => {}
             });
           }, /missing route method/);
 
@@ -83,7 +83,7 @@ describe('koa-joi-router', () => {
             router().route({
               path: '/',
               method: [],
-              handler: function* () {}
+              handler: () => {}
             });
           }, /missing route method/);
 
@@ -107,7 +107,7 @@ describe('koa-joi-router', () => {
           r.route({
             path: '/',
             method: 'get',
-            handler: function* () {},
+            handler: () => {},
             validate: {
               failure: 404
             }
@@ -132,7 +132,7 @@ describe('koa-joi-router', () => {
           ];
 
           const r = router();
-          const fn = function* () {};
+          const fn = () => {};
 
           tests.forEach((test) => {
             const method = test[1] === 0 ?
@@ -155,7 +155,7 @@ describe('koa-joi-router', () => {
       describe('path', () => {
         it('can be a string', (done) => {
           const r = router();
-          const fn = function* () {};
+          const fn = () => {};
 
           assert.doesNotThrow(() => {
             r.get('/', fn);
@@ -216,7 +216,7 @@ describe('koa-joi-router', () => {
       r.route({
         method: 'put',
         path: '/asdf/:id',
-        handler: function* () {}
+        handler: () => {}
       });
 
       assert.equal(1, r.routes.length);
@@ -231,12 +231,12 @@ describe('koa-joi-router', () => {
         {
           method: 'put',
           path: '/asdf/:id',
-          handler: function* () {}
+          handler: () => {}
         },
         {
           method: 'get',
           path: '/asdf/:id',
-          handler: function* () {}
+          handler: () => {}
         }
       ]);
 
@@ -257,29 +257,29 @@ describe('koa-joi-router', () => {
             allowUnknown: true
           })
         },
-        handler: function* handler() {
-          this.status = 204;
+        handler: async function handler(ctx) {
+          ctx.status = 204;
 
           try {
-            assert.equal('object', typeof this.state.route);
+            assert.equal('object', typeof ctx.state.route);
 
-            assert(Array.isArray(this.state.route.method),
+            assert(Array.isArray(ctx.state.route.method),
               'route.method should be an array');
 
-            assert.equal(1, this.state.route.method.length);
-            assert.equal('get', this.state.route.method[0]);
-            assert.equal('/a', this.state.route.path);
-            assert(this.state.route.validate.query, 'missing spec.validate.query');
-            assert('function', typeof this.state.route.handler);
-            assert.notEqual(handler, this.state.route.handler);
+            assert.equal(1, ctx.state.route.method.length);
+            assert.equal('get', ctx.state.route.method[0]);
+            assert.equal('/a', ctx.state.route.path);
+            assert(ctx.state.route.validate.query, 'missing spec.validate.query');
+            assert('function', typeof ctx.state.route.handler);
+            assert.notEqual(handler, ctx.state.route.handler);
           } catch (err) {
-            this.status = 500;
-            this.body = err.stack;
+            ctx.status = 500;
+            ctx.body = err.stack;
           }
         }
       });
 
-      const app = koa();
+      const app = new Koa();
       app.use(r.middleware());
       test(app).get('/a?q=6').expect(204, (err, res) => {
         if (err) console.error(res.text);
@@ -295,16 +295,16 @@ describe('koa-joi-router', () => {
       r.route({
         method: 'get',
         path: '/product/:id/:action',
-        handler: function* () {
-          assert(typeof this.params === 'object' && this.params !== null,
+        handler: async function(ctx, next) {
+          assert(typeof ctx.params === 'object' && ctx.params !== null,
             'missing params');
-          assert.equal(4, this.params.id);
-          assert.equal('remove', this.params.action);
-          this.status = 200;
+          assert.equal(4, ctx.params.id);
+          assert.equal('remove', ctx.params.action);
+          ctx.status = 200;
         }
       });
 
-      const app = koa();
+      const app = new Koa();
       app.use(r.middleware());
       test(app).get('/product/4/remove').expect(200, done);
     });
@@ -327,11 +327,11 @@ describe('koa-joi-router', () => {
               }
             });
 
-            function* fn() {
-              this.body = this.request.body.last + ' ' + this.request.body.first;
+            function fn(ctx, next) {
+              ctx.body = ctx.request.body.last + ' ' + ctx.request.body.first;
             }
 
-            const app = koa();
+            const app = new Koa();
             app.use(r.middleware());
             test(app).post('/')
             .send({
@@ -350,15 +350,15 @@ describe('koa-joi-router', () => {
             r.route({
               method: 'post',
               path: '/',
-              handler: function* () {
-                this.status = 204;
+              handler: function(ctx) {
+                ctx.status = 204;
               },
               validate: {
                 type: 'json'
               }
             });
 
-            const app = koa();
+            const app = new Koa();
             app.use(r.middleware());
 
             test(app)
@@ -381,13 +381,13 @@ describe('koa-joi-router', () => {
                   type: 'json',
                   continueOnError: true
                 },
-                handler: function* () {
-                  this.status = 200;
-                  this.body = this.invalid.type.msg;
+                handler: (ctx) => {
+                  ctx.status = 200;
+                  ctx.body = ctx.invalid.type.msg;
                 }
               });
 
-              const app = koa();
+              const app = new Koa();
               app.use(r.middleware());
 
               test(app)
@@ -413,15 +413,15 @@ describe('koa-joi-router', () => {
             r.route({
               method: 'post',
               path: '/',
-              handler: function* () {
-                this.status = 204;
+              handler: (ctx) => {
+                ctx.status = 204;
               },
               validate: {
                 type: 'json'
               }
             });
 
-            const app = koa();
+            const app = new Koa();
             app.use(r.middleware());
 
             test(app)
@@ -442,15 +442,15 @@ describe('koa-joi-router', () => {
                   type: 'json',
                   continueOnError: true
                 },
-                handler: function* () {
-                  this.status = 200;
-                  this.body = this.invalid &&
-                    this.invalid.type &&
-                    this.invalid.type.msg;
+                handler: (ctx) => {
+                  ctx.status = 200;
+                  ctx.body = ctx.invalid &&
+                    ctx.invalid.type &&
+                    ctx.invalid.type.msg;
                 }
               });
 
-              const app = koa();
+              const app = new Koa();
               app.use(r.middleware());
 
               test(app)
@@ -478,11 +478,11 @@ describe('koa-joi-router', () => {
               }
             });
 
-            function* fn() {
-              this.body = this.request.body.last + ' ' + this.request.body.first;
+            function fn(ctx) {
+              ctx.body = ctx.request.body.last + ' ' + ctx.request.body.first;
             }
 
-            const app = koa();
+            const app = new Koa();
             app.use(r.middleware());
 
             test(app)
@@ -505,15 +505,15 @@ describe('koa-joi-router', () => {
             r.route({
               method: 'post',
               path: '/',
-              handler: function* () {
-                this.status = 204;
+              handler: (ctx) => {
+                ctx.status = 204;
               },
               validate: {
                 type: 'form'
               }
             });
 
-            const app = koa();
+            const app = new Koa();
             app.use(r.middleware());
 
             test(app)
@@ -537,13 +537,13 @@ describe('koa-joi-router', () => {
                   type: 'form',
                   continueOnError: true
                 },
-                handler: function* () {
-                  this.status = 200;
-                  this.body = this.invalid.type.msg;
+                handler: (ctx) => {
+                  ctx.status = 200;
+                  ctx.body = ctx.invalid.type.msg;
                 }
               });
 
-              const app = koa();
+              const app = new Koa();
               app.use(r.middleware());
 
               test(app)
@@ -566,15 +566,15 @@ describe('koa-joi-router', () => {
             r.route({
               method: 'post',
               path: '/',
-              handler: function* () {
-                this.status = 204;
+              handler: (ctx) => {
+                ctx.status = 204;
               },
               validate: {
                 type: 'form'
               }
             });
 
-            const app = koa();
+            const app = new Koa();
             app.use(r.middleware());
 
             test(app)
@@ -593,13 +593,13 @@ describe('koa-joi-router', () => {
                   type: 'form',
                   continueOnError: true
                 },
-                handler: function* () {
-                  this.status = 200;
-                  this.body = this.invalid.type.msg;
+                handler: (ctx) => {
+                  ctx.status = 200;
+                  ctx.body = ctx.invalid.type.msg;
                 }
               });
 
-              const app = koa();
+              const app = new Koa();
               app.use(r.middleware());
 
               test(app)
@@ -619,8 +619,8 @@ describe('koa-joi-router', () => {
             method: 'put',
             path: '/',
             type: 'multipart',
-            handler: function* () {
-              this.status = undefined === this.request.body ?
+            handler: (ctx) => {
+              ctx.status = undefined === ctx.request.body ?
                 200 :
                 500;
             },
@@ -629,7 +629,7 @@ describe('koa-joi-router', () => {
             }
           });
 
-          const app = koa();
+          const app = new Koa();
           app.use(r.middleware());
 
           const b = new Buffer(1024);
@@ -648,23 +648,25 @@ describe('koa-joi-router', () => {
     describe('when expected type is', () => {
       'stream multipart'.split(' ').forEach((type) => {
         describe(type, () => {
-          it('is a co-busboy object', (done) => {
+          it.only('is a co-busboy object', (done) => {
             const r = router();
 
             r.route({
               method: 'put',
               path: '/',
-              handler: function* () {
+              handler: async function(ctx, next) {
+                console.log('got to the handler');
                 let part; // eslint-disable-line no-unused-vars
-                while ((part = yield this.request.parts)) {}
-                this.body = this.request.parts.field.color;
+                while ((part = await ctx.request.parts)) {}
+                console.log('finished awaiting co-body');
+                ctx.body = ctx.request.parts.field.color;
               },
               validate: {
                 type: type
               }
             });
 
-            const app = koa();
+            const app = new Koa();
             app.use(r.middleware());
 
             const b = new Buffer(1024);
@@ -686,15 +688,15 @@ describe('koa-joi-router', () => {
           r.route({
             method: 'put',
             path: '/',
-            handler: function* () {
-              this.status = undefined === this.request.parts ?
+            handler: (ctx) => {
+              ctx.status = undefined === ctx.request.parts ?
                 200 :
                 500;
             },
             validate: {}
           });
 
-          const app = koa();
+          const app = new Koa();
           app.use(r.middleware());
 
           const b = new Buffer(1024);
@@ -709,7 +711,7 @@ describe('koa-joi-router', () => {
     });
   });
 
-  describe('validation', () => {
+  describe.skip('validation', () => {
     describe('of querystring', () => {
       describe('with', () => {
         const r = router();
@@ -725,12 +727,12 @@ describe('koa-joi-router', () => {
               allowUnknown: true
             })
           },
-          handler: function* () {
-            this.body = this.request.query;
+          handler: function(ctx) {
+            ctx.body = ctx.request.query;
           }
         });
 
-        const app = koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         it('missing querystring', (done) => {
@@ -787,24 +789,24 @@ describe('koa-joi-router', () => {
               b: Joi.boolean().required()
             })
           },
-          handler: function* () {
-            this.body = {
-              query: this.request.query,
+          handler: (ctx) => {
+            ctx.body = {
+              query: ctx.request.query,
               date: {
-                type: typeof this.request.query.d,
-                instance: this.request.query.d instanceof Date
+                type: typeof ctx.request.query.d,
+                instance: ctx.request.query.d instanceof Date
               },
               number: {
-                type: typeof this.request.query.n
+                type: typeof ctx.request.query.n
               },
               bool: {
-                type: typeof this.request.query.b
+                type: typeof ctx.request.query.b
               }
             };
           }
         });
 
-        const app = koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         test(app).get('/a?d=7-27-2016&n=34&b=true')
@@ -831,12 +833,12 @@ describe('koa-joi-router', () => {
               1: Joi.number().max(1000)
             })
           },
-          handler: function* () {
-            this.body = this.request.params;
+          handler: function(ctx) {
+            ctx.body = ctx.request.params;
           }
         });
 
-        const app = koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         it('with invalid first match', (done) => {
@@ -867,12 +869,12 @@ describe('koa-joi-router', () => {
               sku: Joi.string().alphanum().length(6)
             })
           },
-          handler: function* () {
-            this.body = this.request.params;
+          handler: function(ctx) {
+            ctx.body = ctx.request.params;
           }
         });
 
-        const app = koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         it('invalid quantity and invalid sku', (done) => {
@@ -918,12 +920,12 @@ describe('koa-joi-router', () => {
               field: Joi.any()
             })
           },
-          handler: function* () {
-            const params = this.request.params.field === 'request' ?
-              this.request.params :
-              this.params;
+          handler: async function(ctx) {
+            const params = ctx.request.params.field === 'request' ?
+              ctx.request.params :
+              ctx.params;
 
-            this.body = {
+            ctx.body = {
               params: params,
               date: {
                 type: typeof params.d,
@@ -939,7 +941,7 @@ describe('koa-joi-router', () => {
           }
         });
 
-        const app = koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         test(app).get('/request/7-27-2016/34/true')
@@ -973,12 +975,12 @@ describe('koa-joi-router', () => {
             Joi.object({ 'x-for-fun': Joi.number().min(5).max(8).required() })
               .options({ allowUnknown: true })
         },
-        handler: function* () {
-          this.status = 204;
+        handler: function(ctx) {
+          ctx.status = 204;
         }
       });
 
-      const app = koa();
+      const app = new Koa();
       app.use(r.middleware());
 
       it('with missing header fails', (done) => {
@@ -1020,7 +1022,7 @@ describe('koa-joi-router', () => {
                   r.route({
                     method: 'post',
                     path: '/',
-                    handler: function* () {},
+                    handler: () => {},
                     validate: {
                       body: Joi.object({ name: Joi.string() }),
                       type: name
@@ -1042,7 +1044,7 @@ describe('koa-joi-router', () => {
               r.route({
                 method: 'post',
                 path: '/',
-                handler: function* () {},
+                handler: () => {},
                 validate: {
                   body: Joi.object({ name: Joi.string() })
                 }
@@ -1067,12 +1069,12 @@ describe('koa-joi-router', () => {
             }),
             type: 'json'
           },
-          handler: function* () {
-            this.status = 200;
+          handler: function(ctx) {
+            ctx.status = 200;
           }
         });
 
-        const app = koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         it('no posted values', (done) => {
@@ -1138,13 +1140,13 @@ describe('koa-joi-router', () => {
                   name: Joi.string().min(10)
                 }
               },
-              handler: function* () {
-                this.status = 200;
-                this.body = !!this.invalid;
+              handler: function(ctx) {
+                ctx.status = 200;
+                ctx.body = !!ctx.invalid;
               }
             });
 
-            const app = koa();
+            const app = new Koa();
             app.use(r.middleware());
 
             test(app)
@@ -1168,12 +1170,12 @@ describe('koa-joi-router', () => {
           validate: {
             type: 'multipart'
           },
-          handler: function* () {
-            this.status = 200;
+          handler: function(ctx) {
+            ctx.status = 200;
           }
         });
 
-        const app = koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         test(app).post('/').send({ hi: 'there' }).expect(400, (err) => {
@@ -1202,7 +1204,7 @@ describe('koa-joi-router', () => {
                   '200': { body: Joi.any().equal('asdr') }
                 }
               },
-              handler: function* () {}
+              handler: () => {}
             });
           });
         });
@@ -1218,7 +1220,7 @@ describe('koa-joi-router', () => {
                   '201,202': { body: Joi.any().equal('band-reject') }
                 }
               },
-              handler: function* () {}
+              handler: () => {}
             });
           });
         });
@@ -1234,7 +1236,7 @@ describe('koa-joi-router', () => {
                   '400, 401': { body: Joi.any().equal('low-pass') }
                 }
               },
-              handler: function* () {}
+              handler: () => {}
             });
           });
         });
@@ -1250,7 +1252,7 @@ describe('koa-joi-router', () => {
                   '402-404': { body: Joi.any().equal('hi-pass') }
                 }
               },
-              handler: function* () {}
+              handler: () => {}
             });
           });
         });
@@ -1267,19 +1269,19 @@ describe('koa-joi-router', () => {
                   '500-502, 504 ,506-510,201': { body: Joi.any().equal('band-pass') }
                 }
               },
-              handler: function* () {
-                this.status = parseInt(this.params.status, 10);
+              handler: function(ctx) {
+                ctx.status = parseInt(ctx.params.status, 10);
 
-                if (this.params.status === '200') {
-                  this.body = { 'pass-thru': 1 };
+                if (ctx.params.status === '200') {
+                  ctx.body = { 'pass-thru': 1 };
                 } else {
-                  this.body = 'band-pass';
+                  ctx.body = 'band-pass';
                 }
               }
             });
           });
 
-          const app = koa();
+          const app = new Koa();
           app.use(r.middleware());
 
           yield test(app).post('/combo/500').expect('band-pass').expect(500).end();
@@ -1303,14 +1305,14 @@ describe('koa-joi-router', () => {
                   '*': { body: Joi.any().equal('all') }
                 }
               },
-              handler: function* () {
-                this.status = 201;
-                this.body = 'all';
+              handler: function(ctx) {
+                ctx.status = 201;
+                ctx.body = 'all';
               }
             });
           });
 
-          const app = koa();
+          const app = new Koa();
           app.use(r.middleware());
           yield test(app).get('/all').expect('all').expect(201).end();
         });
@@ -1344,7 +1346,7 @@ describe('koa-joi-router', () => {
                   method: 'get',
                   path: '/invalid',
                   validate: { output: output },
-                  handler: function* () {}
+                  handler: () => {}
                 });
               });
 
@@ -1364,7 +1366,7 @@ describe('koa-joi-router', () => {
                   '%': { body: Joi.string() }
                 }
               },
-              handler: function* () {}
+              handler: () => {}
             });
           });
         });
@@ -1382,8 +1384,8 @@ describe('koa-joi-router', () => {
                   '200, 201': { body: Joi.any().equal('all') }
                 }
               },
-              handler: function* () {
-                this.body = 'all';
+              handler: function(ctx) {
+                ctx.body = 'all';
               }
             });
           }, /200 <=> 200, 201/);
@@ -1398,8 +1400,8 @@ describe('koa-joi-router', () => {
                   '200-500': { body: Joi.any().equal('all') }
                 }
               },
-              handler: function* () {
-                this.body = 'all';
+              handler: function(ctx) {
+                ctx.body = 'all';
               }
             });
           }, /400 <=> 200-500/);
@@ -1414,8 +1416,8 @@ describe('koa-joi-router', () => {
                   '404': { body: Joi.any().equal('all') }
                 }
               },
-              handler: function* () {
-                this.body = 'all';
+              handler: (ctx) => {
+                ctx.body = 'all';
               }
             });
           }, /404 <=> 200-500/);
@@ -1430,8 +1432,8 @@ describe('koa-joi-router', () => {
                   '200,204': { body: Joi.any().equal('all') }
                 }
               },
-              handler: function* () {
-                this.body = 'all';
+              handler: (ctx) => {
+                ctx.body = 'all';
               }
             });
           }, /201, 204-208 <=> 200,204/);
@@ -1446,8 +1448,8 @@ describe('koa-joi-router', () => {
                   '200, 201-203, 206, 301-400': { body: Joi.any().equal('all') }
                 }
               },
-              handler: function* () {
-                this.body = 'all';
+              handler: (ctx) => {
+                ctx.body = 'all';
               }
             });
           }, /400, 404 <=> 200, 201-203, 206, 301-400/);
@@ -1462,8 +1464,8 @@ describe('koa-joi-router', () => {
                   '500': { body: Joi.any().equal('all') }
                 }
               },
-              handler: function* () {
-                this.body = 'all';
+              handler: (ctx) => {
+                ctx.body = 'all';
               }
             });
           }, /500 <=> \*/);
@@ -1482,7 +1484,7 @@ describe('koa-joi-router', () => {
                   '203-599': { body: Joi.any().equal('all') }
                 }
               },
-              handler: function* () {}
+              handler: () => {}
             });
           });
         });
@@ -1498,7 +1500,7 @@ describe('koa-joi-router', () => {
               validate: {
                 output: { '200': {} }
               },
-              handler: function* () {}
+              handler: () => {}
             });
           });
         });
@@ -1514,7 +1516,7 @@ describe('koa-joi-router', () => {
                   '200': { headers: { x: Joi.any() } }
                 }
               },
-              handler: function* () {}
+              handler: () => {}
             });
           });
         });
@@ -1530,7 +1532,7 @@ describe('koa-joi-router', () => {
                   '200': { body: { x: Joi.any() } }
                 }
               },
-              handler: function* () {}
+              handler: () => {}
             });
           });
         });
@@ -1548,8 +1550,8 @@ describe('koa-joi-router', () => {
                 '100-599': { body: { n: Joi.number().max(10).required() } }
               }
             },
-            handler: function* () {
-              this.body = { n: '3' };
+            handler: (ctx) => {
+              ctx.body = { n: '3' };
             }
           });
 
@@ -1561,8 +1563,8 @@ describe('koa-joi-router', () => {
                 '200': { body: Joi.number().required() }
               }
             },
-            handler: function* () {
-              this.status = 200;
+            handler: (ctx) => {
+              ctx.status = 200;
             }
           });
 
@@ -1578,15 +1580,15 @@ describe('koa-joi-router', () => {
                 }
               }
             },
-            handler: function* () {
-              this.body = {
+            handler: (ctx) => {
+              ctx.body = {
                 x: 'hi',
                 y: 'asdf'
               };
             }
           });
 
-          const app = koa();
+          const app = new Koa();
           app.use(r.middleware());
 
           it('casts output values according to Joi rules', function* () {
@@ -1613,12 +1615,12 @@ describe('koa-joi-router', () => {
           r.route({
             method: 'post',
             path: '/notouch',
-            handler: function* () {
-              this.body = { n: '4' };
+            handler: (ctx) => {
+              ctx.body = { n: '4' };
             }
           });
 
-          const app = koa();
+          const app = new Koa();
           app.use(r.middleware());
 
           it('is not touched', function* () {
@@ -1648,9 +1650,9 @@ describe('koa-joi-router', () => {
                 }
               }
             },
-            handler: function* () {
-              this.set('n', '3');
-              this.body = 'RWC';
+            handler: (ctx) => {
+              ctx.set('n', '3');
+              ctx.body = 'RWC';
             }
           });
 
@@ -1664,9 +1666,9 @@ describe('koa-joi-router', () => {
                 }
               }
             },
-            handler: function* () {
-              this.set('nope', 5);
-              this.body = 'RWC';
+            handler: (ctx) => {
+              ctx.set('nope', 5);
+              ctx.body = 'RWC';
             }
           });
 
@@ -1680,13 +1682,13 @@ describe('koa-joi-router', () => {
                 }
               }
             },
-            handler: function* () {
-              this.set('n', 100);
-              this.body = 'RWC';
+            handler: (ctx) => {
+              ctx.set('n', 100);
+              ctx.body = 'RWC';
             }
           });
 
-          const app = koa();
+          const app = new Koa();
           app.use(r.middleware());
 
           it('casts output values according to Joi rules', function* () {
@@ -1713,13 +1715,13 @@ describe('koa-joi-router', () => {
           r.route({
             method: 'post',
             path: '/notouch',
-            handler: function* () {
-              this.set('n', '3');
-              this.body = 'RWC';
+            handler: (ctx) => {
+              ctx.set('n', '3');
+              ctx.body = 'RWC';
             }
           });
 
-          const app = koa();
+          const app = new Koa();
           app.use(r.middleware());
 
           it('is not touched', function* () {
@@ -1740,12 +1742,12 @@ describe('koa-joi-router', () => {
               '510': { body: { n: Joi.string() } }
             }
           },
-          handler: function* () {
-            this.body = { n: 4 };
+          handler: (ctx) => {
+            ctx.body = { n: 4 };
           }
         });
 
-        const app = koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         const o = yield test(app).post('/notouch').expect(200).end();
@@ -1756,14 +1758,14 @@ describe('koa-joi-router', () => {
     describe('with multiple methods', () => {
       describe('and multiple middleware', () => {
         it('works', (done) => {
-          function* a(next) {
-            this.worked = true;
-            yield next;
+          async function a(ctx, next) {
+            ctx.worked = true;
+            await next();
           }
 
-          function* b() {
-            this.body = {
-              worked: !!this.worked
+          function b(ctx) {
+            ctx.body = {
+              worked: !!ctx.worked
             };
           }
 
@@ -1779,7 +1781,7 @@ describe('koa-joi-router', () => {
             }
           });
 
-          const app = koa();
+          const app = new Koa();
           app.use(r.middleware());
 
           test(app).put('/').set('yum', '&&').expect(400, (err) => {
@@ -1911,22 +1913,22 @@ describe('koa-joi-router', () => {
     });
   });
 
-  describe('use()', () => {
+  describe.skip('use()', () => {
     describe('runs middleware before routes', () => {
       it('when called before routes', function* () {
         const r = router();
         let middlewareRanFirst = false;
 
-        r.use(function* (next) {
+        r.use(async function(ctx, next) {
           middlewareRanFirst = true;
-          yield next;
+          await next();
         });
 
-        r.get('/test', function* () {
-          this.body = String(middlewareRanFirst);
+        r.get('/test', (ctx) => {
+          ctx.body = String(middlewareRanFirst);
         });
 
-        const app = koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         yield test(app).get('/test')
@@ -1939,16 +1941,16 @@ describe('koa-joi-router', () => {
         const r = router();
         let middlewareRanFirst = false;
 
-        r.get('/test', function* () {
-          this.body = String(middlewareRanFirst);
+        r.get('/test', (ctx) => {
+          ctx.body = String(middlewareRanFirst);
         });
 
-        r.use(function* (next) {
+        r.use(async function(ctx, next) {
           middlewareRanFirst = true;
-          yield next;
+          await next();
         });
 
-        const app = koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         yield test(app).get('/test')
@@ -1963,19 +1965,19 @@ describe('koa-joi-router', () => {
         const r = router();
         let middlewareRanFirst = false;
 
-        function* route() {
-          this.body = String(middlewareRanFirst);
+        function route(ctx) {
+          ctx.body = String(middlewareRanFirst);
         }
 
         r.get('/test', route);
         r.get('/nada', route);
 
-        r.use('/nada', function* (next) {
+        r.use('/nada', async function(ctx, next) {
           middlewareRanFirst = true;
-          yield next;
+          await next();
         });
 
-        const app = koa();
+        const app = new Koa();
         app.use(r.middleware());
 
         yield test(app).get('/test')
@@ -1991,30 +1993,30 @@ describe('koa-joi-router', () => {
     });
   });
 
-  describe('prefix()', () => {
+  describe.skip('prefix()', () => {
     it('adds routes as children of the `path`', function* () {
-      const app = koa();
+      const app = new Koa();
       app.context.msg = 'fail';
 
       const r = router();
 
-      r.use(function* (next) {
-        this.msg = 'works';
-        yield next;
+      r.use(async function(ctx, next) {
+        ctx.msg = 'works';
+        await next();
       });
 
-      r.get('/', function* () {
-        this.body = this.msg;
+      r.get('/', function(ctx) {
+        ctx.body = ctx.msg;
       });
 
-      r.get('/itworks', function* () {
-        this.body = 'it' + this.msg;
+      r.get('/itworks', function(ctx) {
+        ctx.body = 'it' + ctx.msg;
       });
 
       r.get('/testparam/:id', {
         validate: { params: { id: Joi.string().min(5) } }
-      }, function* () {
-        this.body = 'it' + this.msg;
+      }, function(ctx) {
+        ctx.body = 'it' + ctx.msg;
       });
 
       r.prefix('/user');

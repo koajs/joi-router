@@ -36,7 +36,7 @@
     "flatten": "1.0.2",
     "is-gen-fn": "0.0.1",
     "joi": "9.0.4",
-    "koa-router": "git+https://github.com/aheckmann/koa-router.git#f0c60d374b5903f",
+    "koa-router": "^7.0.0",
     "methods": "1.1.2",
     "sliced": "1.0.1"
   },
@@ -45,7 +45,7 @@
     "eslint-config-pebble": "^3.0.0",
     "eslint-plugin-standard": "^1.1.0",
     "istanbul": "^0.4.0",
-    "koa": "^1.0.0",
+    "koa": "2.0.0-alpha.6",
     "mocha": "^3.0.2",
     "co-mocha": "^1.1.0",
     "co-supertest": "^0.0.8",
