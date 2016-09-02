@@ -647,8 +647,8 @@ describe('koa-joi-router', () => {
   describe('request.parts', () => {
     describe('when expected type is', () => {
       'stream multipart'.split(' ').forEach((type) => {
-        describe(type, () => {
-          it.only('is a co-busboy object', (done) => {
+        describe.skip(type, () => {
+          it('is a co-busboy object', (done) => {
             const r = router();
 
             r.route({
@@ -711,7 +711,7 @@ describe('koa-joi-router', () => {
     });
   });
 
-  describe.skip('validation', () => {
+  describe('validation', () => {
     describe('of querystring', () => {
       describe('with', () => {
         const r = router();
@@ -727,7 +727,7 @@ describe('koa-joi-router', () => {
               allowUnknown: true
             })
           },
-          handler: function(ctx) {
+          handler: (ctx) => {
             ctx.body = ctx.request.query;
           }
         });
@@ -833,7 +833,7 @@ describe('koa-joi-router', () => {
               1: Joi.number().max(1000)
             })
           },
-          handler: function(ctx) {
+          handler: (ctx) => {
             ctx.body = ctx.request.params;
           }
         });
@@ -869,7 +869,7 @@ describe('koa-joi-router', () => {
               sku: Joi.string().alphanum().length(6)
             })
           },
-          handler: function(ctx) {
+          handler: (ctx) => {
             ctx.body = ctx.request.params;
           }
         });
@@ -975,7 +975,7 @@ describe('koa-joi-router', () => {
             Joi.object({ 'x-for-fun': Joi.number().min(5).max(8).required() })
               .options({ allowUnknown: true })
         },
-        handler: function(ctx) {
+        handler: (ctx) => {
           ctx.status = 204;
         }
       });
@@ -1069,7 +1069,7 @@ describe('koa-joi-router', () => {
             }),
             type: 'json'
           },
-          handler: function(ctx) {
+          handler: (ctx) => {
             ctx.status = 200;
           }
         });
@@ -1140,7 +1140,7 @@ describe('koa-joi-router', () => {
                   name: Joi.string().min(10)
                 }
               },
-              handler: function(ctx) {
+              handler: (ctx) => {
                 ctx.status = 200;
                 ctx.body = !!ctx.invalid;
               }
@@ -1170,7 +1170,7 @@ describe('koa-joi-router', () => {
           validate: {
             type: 'multipart'
           },
-          handler: function(ctx) {
+          handler: (ctx) => {
             ctx.status = 200;
           }
         });
@@ -1384,7 +1384,7 @@ describe('koa-joi-router', () => {
                   '200, 201': { body: Joi.any().equal('all') }
                 }
               },
-              handler: function(ctx) {
+              handler: (ctx) => {
                 ctx.body = 'all';
               }
             });
@@ -1400,7 +1400,7 @@ describe('koa-joi-router', () => {
                   '200-500': { body: Joi.any().equal('all') }
                 }
               },
-              handler: function(ctx) {
+              handler: (ctx) => {
                 ctx.body = 'all';
               }
             });
@@ -1913,7 +1913,7 @@ describe('koa-joi-router', () => {
     });
   });
 
-  describe.skip('use()', () => {
+  describe('use()', () => {
     describe('runs middleware before routes', () => {
       it('when called before routes', function* () {
         const r = router();
@@ -1937,7 +1937,7 @@ describe('koa-joi-router', () => {
         .end();
       });
 
-      it('when called after routes', function* () {
+      it('not after routes', function* () {
         const r = router();
         let middlewareRanFirst = false;
 
@@ -1954,28 +1954,28 @@ describe('koa-joi-router', () => {
         app.use(r.middleware());
 
         yield test(app).get('/test')
-        .expect('true')
+        .expect('false')
         .expect(200)
         .end();
       });
     });
 
     describe('accepts an optional path', () => {
-      it('applies middleware only to that path', function* () {
+      it('which applies middleware only to that path', function* () {
         const r = router();
-        let middlewareRanFirst = false;
-
-        function route(ctx) {
-          ctx.body = String(middlewareRanFirst);
-        }
-
-        r.get('/test', route);
-        r.get('/nada', route);
+        let middlewareRan = false;
 
         r.use('/nada', async function(ctx, next) {
-          middlewareRanFirst = true;
+          middlewareRan = true;
           await next();
         });
+
+        function route(ctx) {
+          ctx.body = String(middlewareRan);
+        }
+
+        r.get('/nada', route);
+        r.get('/test', route);
 
         const app = new Koa();
         app.use(r.middleware());
