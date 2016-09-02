@@ -1993,7 +1993,7 @@ describe('koa-joi-router', () => {
     });
   });
 
-  describe.skip('prefix()', () => {
+  describe('prefix()', () => {
     it('adds routes as children of the `path`', function* () {
       const app = new Koa();
       app.context.msg = 'fail';
@@ -2014,9 +2014,9 @@ describe('koa-joi-router', () => {
       });
 
       r.get('/testparam/:id', {
-        validate: { params: { id: Joi.string().min(5) } }
+        validate: { params: { id: Joi.string().min(4) } }
       }, function(ctx) {
-        ctx.body = 'it' + ctx.msg;
+        ctx.body = `it${ctx.msg}${ctx.params.id}`;
       });
 
       r.prefix('/user');
@@ -2047,8 +2047,8 @@ describe('koa-joi-router', () => {
       .expect(200)
       .end();
 
-      yield test(app).get('/user/testparam/itworks')
-      .expect('itworks')
+      yield test(app).get('/user/testparam/dude')
+      .expect('itworksdude')
       .expect(200)
       .end();
     });

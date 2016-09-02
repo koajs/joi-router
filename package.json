@@ -36,7 +36,7 @@
     "flatten": "1.0.2",
     "is-gen-fn": "0.0.1",
     "joi": "9.0.4",
-    "koa-router": "^7.0.0",
+    "koa-router": "git+https://github.com/aheckmann/koa-router.git#19e60d9",
     "methods": "1.1.2",
     "sliced": "1.0.1"
   },
