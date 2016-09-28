@@ -341,13 +341,17 @@ admin.route({
   method: 'post',
   path: '/blog',
   validate: { type: 'multipart' },
-  handler: function *(){
-    var parts = yield this.request.parts;
+  handler: function(){
+    var parts = this.request.parts;
     var part;
 
-    while (part = yield parts) {
-      // do something with the incoming part stream
-      part.pipe(someOtherStream);
+    try {
+      while (part = await parts) {
+        // do something with the incoming part stream
+        part.pipe(someOtherStream);
+      }
+    } catch (err) {
+      // handle the error
     }
 
     console.log(parts.field.name); // form data
