@@ -295,7 +295,7 @@ describe('koa-joi-router', () => {
       r.route({
         method: 'get',
         path: '/product/:id/:action',
-        handler: async function(ctx, next) {
+        handler: async (ctx) => {
           assert(typeof ctx.params === 'object' && ctx.params !== null,
             'missing params');
           assert.equal(4, ctx.params.id);
@@ -327,7 +327,7 @@ describe('koa-joi-router', () => {
               }
             });
 
-            function fn(ctx, next) {
+            function fn(ctx) {
               ctx.body = ctx.request.body.last + ' ' + ctx.request.body.first;
             }
 
@@ -647,19 +647,25 @@ describe('koa-joi-router', () => {
   describe('request.parts', () => {
     describe('when expected type is', () => {
       'stream multipart'.split(' ').forEach((type) => {
-        describe.skip(type, () => {
+        describe(type, () => {
           it('is a co-busboy object', (done) => {
             const r = router();
 
             r.route({
               method: 'put',
               path: '/',
-              handler: async function(ctx, next) {
-                console.log('got to the handler');
-                let part; // eslint-disable-line no-unused-vars
-                while ((part = await ctx.request.parts)) {}
-                console.log('finished awaiting co-body');
-                ctx.body = ctx.request.parts.field.color;
+              handler: async (ctx) => {
+                let filename;
+                let part;
+                while ((part = await ctx.request.parts)) {
+                  filename = part.filename;
+                  part.resume();
+                }
+
+                ctx.body = {
+                  color: ctx.request.parts.field.color,
+                  file: filename
+                };
               },
               validate: {
                 type: type
@@ -669,14 +675,11 @@ describe('koa-joi-router', () => {
             const app = new Koa();
             app.use(r.middleware());
 
-            const b = new Buffer(1024);
-            b.fill('a');
-
             test(app)
             .put('/')
-            .attach('file1', b)
-            .attach('color', new Buffer('green'))
-            .expect(200, done);
+            .attach('file1', `${__dirname}/fixtures/koa.png`)
+            .field('color', new Buffer('green'))
+            .expect('{"color":"green","file":"koa.png"}', done);
           });
         });
       });
@@ -1919,7 +1922,7 @@ describe('koa-joi-router', () => {
         const r = router();
         let middlewareRanFirst = false;
 
-        r.use(async function(ctx, next) {
+        r.use(async (ctx, next) => {
           middlewareRanFirst = true;
           await next();
         });
@@ -1945,7 +1948,7 @@ describe('koa-joi-router', () => {
           ctx.body = String(middlewareRanFirst);
         });
 
-        r.use(async function(ctx, next) {
+        r.use(async (ctx, next) => {
           middlewareRanFirst = true;
           await next();
         });
@@ -1965,7 +1968,7 @@ describe('koa-joi-router', () => {
         const r = router();
         let middlewareRan = false;
 
-        r.use('/nada', async function(ctx, next) {
+        r.use('/nada', async (ctx, next) => {
           middlewareRan = true;
           await next();
         });
@@ -2000,22 +2003,22 @@ describe('koa-joi-router', () => {
 
       const r = router();
 
-      r.use(async function(ctx, next) {
+      r.use(async (ctx, next) => {
         ctx.msg = 'works';
         await next();
       });
 
-      r.get('/', function(ctx) {
+      r.get('/', (ctx) => {
         ctx.body = ctx.msg;
       });
 
-      r.get('/itworks', function(ctx) {
+      r.get('/itworks', (ctx) => {
         ctx.body = 'it' + ctx.msg;
       });
 
       r.get('/testparam/:id', {
         validate: { params: { id: Joi.string().min(4) } }
-      }, function(ctx) {
+      }, (ctx) => {
         ctx.body = `it${ctx.msg}${ctx.params.id}`;
       });
 
