@@ -470,10 +470,7 @@ methods.forEach((method) => {
       handler: fns
     };
 
-    // TODO Object.assign(spec, config);
-    Object.keys(config).forEach((key) => {
-      spec[key] = config[key];
-    });
+    Object.assign(spec, config);
 
     this.route(spec);
     return this;
