@@ -239,7 +239,7 @@ function checkValidators(spec) {
  * Creates body parser middleware.
  *
  * @param {Object} spec
- * @return {GeneratorFunction}
+ * @return {async function}
  * @api private
  */
 
@@ -311,7 +311,7 @@ function captureError(ctx, type, err) {
  * Creates validator middleware.
  *
  * @param {Object} spec
- * @return {GeneratorFunction}
+ * @return {async function}
  * @api private
  */
 
@@ -354,7 +354,7 @@ function makeValidator(spec) {
  * Exposes route spec.
  *
  * @param {Object} spec
- * @return {GeneratorFunction}
+ * @return {async function}
  * @api private
  */
 function makeSpecExposer(spec) {
@@ -440,7 +440,7 @@ function validateInput(prop, ctx, validate) {
  *
  * @param {String} path
  * @param {Object} [config] optional
- * @param {GeneratorFunction|GeneratorFunction[]} handler(s)
+ * @param {async function|async function[]} handler(s)
  * @return {App} self
  */
 
