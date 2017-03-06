@@ -2,7 +2,7 @@
 test: mocha lint
 
 mocha:
-	@NODE_ENV=test ./node_modules/.bin/mocha --harmony-async-await $(MOCHA_OPTS)
+	@NODE_ENV=test ./node_modules/.bin/mocha $(MOCHA_OPTS)
 
 lint:
 	@ find . -name "*.js" \
