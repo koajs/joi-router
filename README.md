@@ -205,14 +205,21 @@ admin.del('/thing', config, middleware, handler);
 When you need to run middleware before all routes, OR, if you just need to run
 middleware before a specific path, this method is for you.
 
-To run middleware before all routes, pass your middleware directly:
-
 ```js
 const router = require('koa-joi-router');
 const users = router();
 
-users.get('/something', handler);
-users.use(runThisBeforeAllRoutes);
+users.get('/something', async (ctx, next) => {
+  console.log('this logs before your /something handlers');
+  await next();
+  console.log('this logs after your /something handlers');
+});
+
+users.use(async (ctx, next) => {
+  console.log('this logs before all other handlers');
+  await next();
+  console.log('this logs after all other handlers');
+});
 ```
 
 It doesn't matter if you define your routes before or after you call `.use()`,
@@ -538,7 +545,7 @@ supports it, so do we!
 ```js
 const router = require('koa-joi-router');
 const admin = router();
-admin.get('/blog/:year(\\d{4})-:day(\\d{2})-:article(\\d{3})', () => {});
+admin.get('/blog/:year(\\d{4})-:day(\\d{2})-:article(\\d{3})', asycn (ctx, next) => { .. });
 ```
 
 ## Multiple methods support
