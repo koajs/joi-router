@@ -204,7 +204,7 @@ public.route(routes);
 - `handler`: **required** async function or function
 - `meta`: meta data about this route. `koa-joi-router` ignores this but stores it along with all other route data
 
-### .get(),post(),put(),del() etc - HTTP methods
+### .get(),post(),put(),delete() etc - HTTP methods
 
 `koa-joi-router` supports the traditional `router.get()`, `router.post()` type APIs
 as well.
@@ -218,7 +218,7 @@ const admin = router();
 admin.put('/thing', handler);
 admin.get('/thing', middleware, handler);
 admin.post('/thing', config, handler);
-admin.del('/thing', config, middleware, handler);
+admin.delete('/thing', config, middleware, handler);
 ```
 
 ### .use()
@@ -614,7 +614,7 @@ admin.route({
 });
 ```
 
-This also works with the .get(),post(),put(),del(), etc HTTP method helpers.
+This also works with the .get(),post(),put(),delete(), etc HTTP method helpers.
 
 ```js
 const router = require('koa-joi-router');
