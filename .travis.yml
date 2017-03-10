@@ -9,7 +9,7 @@ matrix:
   allow_failures:
     # Allow the nightly installs to fail
     - env: "NVM_NODEJS_ORG_MIRROR=https://nodejs.org/download/nightly"
-script: "make test-travis"
+script: "npm test"
 after_script:
   - "npm i codecov"
   - "./node_modules/.bin/codecov"
