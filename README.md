@@ -1,17 +1,38 @@
 #joi-router
 
-Easy, rich and fully validated [koa](http://koajs.com) routing.
+Easy, rich and fully validated [koa][] routing.
 
-[![Build Status](https://travis-ci.org/koajs/joi-router.svg?branch=master)](https://travis-ci.org/koajs/joi-router)
-[![Coverage Status](https://img.shields.io/coveralls/koajs/joi-router.svg)](https://coveralls.io/r/koajs/joi-router)
-[![npm](http://img.shields.io/npm/v/koa-joi-router.svg)](https://www.npmjs.org/package/koa-joi-router)
+[![NPM version][npm-image]][npm-url]
+[![build status][travis-image]][travis-url]
+[![Test coverage][codecov-image]][codecov-url]
+[![David deps][david-image]][david-url]
+[![npm download][download-image]][download-url]
+
+[npm-image]: https://img.shields.io/npm/v/koa-joi-router.svg?style=flat-square
+[npm-url]: https://npmjs.org/package/koa-joi-router
+[travis-image]: https://img.shields.io/travis/koajs/joi-router.svg?style=flat-square
+[travis-url]: https://travis-ci.org/koajs/joi-router
+[codecov-image]: https://codecov.io/github/koajs/joi-router/coverage.svg?branch=master
+[codecov-url]: https://codecov.io/github/koajs/joi-router?branch=master
+[david-image]: https://img.shields.io/david/koajs/joi-router.svg?style=flat-square
+[david-url]: https://david-dm.org/koajs/joi-router
+[download-image]: https://img.shields.io/npm/dm/koa-joi-router.svg?style=flat-square
+[download-url]: https://npmjs.org/package/koa-joi-router
+[co]: https://github.com/tj/co
+[koa]: http://koajs.com
+[co-body]: https://github.com/visionmedia/co-body
+[await-busboy]: https://github.com/aheckmann/await-busboy
+[joi]: https://github.com/hapijs/joi
+[koa-router]: https://github.com/alexmingoia/koa-router
+[generate API documentation]: https://github.com/a-s-o/koa-docs
+[path-to-regexp]: https://github.com/pillarjs/path-to-regexp
 
 #### Features:
 
-- built in input validation using [joi](https://github.com/hapijs/joi)
-- built in [output validation](#validating-output) using [joi](https://github.com/hapijs/joi)
-- built in body parsing using [co-body](https://github.com/visionmedia/co-body) and [co-busboy](https://github.com/cojs/busboy)
-- built on the great [koa-router](https://github.com/alexmingoia/koa-router)
+- built in input validation using [joi][]
+- built in [output validation](#validating-output) using [joi][]
+- built in body parsing using [co-body][] and [await-busboy][]
+- built on the great [koa-router][]
 - [exposed route definitions](#routes) for later analysis
 - string path support
 - [regexp-like path support](#path-regexps)
@@ -171,10 +192,10 @@ public.route(routes);
 - `method`: **required** HTTP method like "get", "post", "put", etc
 - `path`: **required** string
 - `validate`
-  - `header`: object which conforms to [Joi](https://github.com/hapijs/joi) validation
-  - `query`: object which conforms to [Joi](https://github.com/hapijs/joi) validation
-  - `params`: object which conforms to [Joi](https://github.com/hapijs/joi) validation
-  - `body`: object which conforms to [Joi](https://github.com/hapijs/joi) validation
+  - `header`: object which conforms to [Joi][] validation
+  - `query`: object which conforms to [Joi][] validation
+  - `params`: object which conforms to [Joi][] validation
+  - `body`: object which conforms to [Joi][] validation
   - `maxBody`: max incoming body size for forms or json input
   - `failure`: HTTP response code to use when input validation fails. default `400`
   - `type`: if validating the request body, this is **required**. either `form`, `json` or `multipart`
@@ -347,7 +368,7 @@ The `ctx.request.parts` property will be set when either of the following
 When `validate.type` is set to `multipart`, the incoming data must be multipart data.
 If it is not, validation will fail and the response
 status will be set to 400 or the value of `validate.failure` if specified.
-If successful, `ctx.request.parts` will be set to a
+If successful, `ctx.request.parts` will be set to an
 [await-busboy][] object.
 
 ```js
@@ -522,7 +543,7 @@ router.route({
 
 Each router exposes it's route definitions through it's `routes` property.
 This is helpful when you'd like to introspect the previous definitions and
-take action e.g. to [generate API documentation](https://github.com/a-s-o/koa-docs) etc.
+take action e.g. to [generate API documentation][] etc.
 
 ```js
 const router = require('koa-joi-router');
@@ -539,7 +560,7 @@ console.log(admin.routes);
 ## Path RegExps
 
 Sometimes you need `RegExp`-like syntax support for your route definitions.
-Because [path-to-regexp](https://github.com/pillarjs/path-to-regexp)
+Because [path-to-regexp][]
 supports it, so do we!
 
 ```js
@@ -650,4 +671,3 @@ admin.route({
 
 [MIT](https://github.com/koajs/joi-router/blob/master/LICENSE)
 
-[await-busboy]: https://github.com/aheckmann/await-busboy
