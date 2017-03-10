@@ -639,9 +639,12 @@ admin.route({
 
 ### Running tests
 
-- `make test` runs tests
-- `make test-cov` runs tests + test coverage
-- `make open-cov` opens test coverage results in your browser
+- `npm test` runs tests + code coverage + lint
+- `npm run lint` runs lint only
+- `npm run lint-fix` runs lint and attempts to fix syntax issues
+- `npm run test-cov` runs tests + test coverage
+- `npm run open-cov` opens test coverage results in your browser
+- `npm run test-only` runs tests only
 
 ## LICENSE
 
