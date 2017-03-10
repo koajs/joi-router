@@ -1,4 +1,15 @@
 
+5.0.0 / 2017-03-09
+==================
+
+ * breaking; now requires node >= 7.6
+ * added; async/await support
+ * removed; generator support
+ * removed; makefile in favor of npm scripts
+ * deps; use await-busboy
+ * deps; updated
+ * docs; updated
+
 4.0.0 / 2016-07-28
 ==================
 
