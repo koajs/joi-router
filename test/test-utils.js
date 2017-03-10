@@ -9,13 +9,14 @@ function MiddlewareGenerator() {
 MiddlewareGenerator.prototype.generate = function() {
   const i = this.count += 1;
   const self = this;
-  return function* (next) {
+  return async function(ctx, next) {
     const expectedBody = (i - 1) + ' out of ' + self.count;
-    if (i > 1 && this.body !== expectedBody) {
-      this.throw(400, 'Handler executed out-of-order');
+    if (i > 1 && ctx.body !== expectedBody) {
+      ctx.throw(400, 'Handler executed out-of-order');
+      return;
     }
-    this.body = i + ' out of ' + self.count;
-    yield next;
+    ctx.body = i + ' out of ' + self.count;
+    await next();
   };
 };
 

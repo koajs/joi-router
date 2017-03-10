@@ -1,9 +1,15 @@
+sudo: false
 language: node_js
+node_js:
+  - 7.6
 matrix:
   include:
-    - node_js: "4"
-    - node_js: "5"
-    - node_js: "6"
-
-script: "make test-travis"
-after_script: "npm install coveralls@2.11.1 && cat ./coverage/lcov.info | coveralls"
+    - node_js: "8.0"
+      env: "NVM_NODEJS_ORG_MIRROR=https://nodejs.org/download/nightly"
+  allow_failures:
+    # Allow the nightly installs to fail
+    - env: "NVM_NODEJS_ORG_MIRROR=https://nodejs.org/download/nightly"
+script: "npm test"
+after_script:
+  - "npm i codecov"
+  - "./node_modules/.bin/codecov"
