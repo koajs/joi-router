@@ -88,9 +88,9 @@ public.route({
   }
 });
 
-const app = koa();
+const app = new koa();
 app.use(public.middleware());
-app.listen();
+app.listen(3000);
 ```
 
 ## Usage
