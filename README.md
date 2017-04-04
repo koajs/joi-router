@@ -566,7 +566,9 @@ supports it, so do we!
 ```js
 const router = require('koa-joi-router');
 const admin = router();
-admin.get('/blog/:year(\\d{4})-:day(\\d{2})-:article(\\d{3})', asycn (ctx, next) => { .. });
+admin.get('/blog/:year(\\d{4})-:day(\\d{2})-:article(\\d{3})', async (ctx, next) => { 
+ console.log(ctx.request.params) // { year: '2017', day: '01', article: '011' } 
+});
 ```
 
 ## Multiple methods support
