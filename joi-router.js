@@ -41,7 +41,8 @@ function Router() {
 
 delegate(Router.prototype, 'router')
   .method('prefix')
-  .method('use');
+  .method('use')
+  .method('param');
 
 /**
  * Return koa middleware
