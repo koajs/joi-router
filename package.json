@@ -36,7 +36,7 @@
     "await-busboy": "1.0.1",
     "clone": "2.1.1",
     "co-body": "5.0.2",
-    "debug": "2.6.1",
+    "debug": "2.6.7",
     "delegates": "1.0.0",
     "flatten": "1.0.2",
     "is-gen-fn": "0.0.1",
@@ -61,7 +61,7 @@
       "pebble"
     ],
     "parserOptions": {
-        "ecmaVersion": 2017
+      "ecmaVersion": 2017
     }
   }
 }
