@@ -1,4 +1,4 @@
-#joi-router
+# joi-router
 
 Easy, rich and fully validated [koa][] routing.
 
