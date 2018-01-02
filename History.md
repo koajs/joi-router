@@ -1,4 +1,14 @@
 
+5.1.0 / 2018-01-02
+==================
+
+ * added; router.param() - #45 by pixeldrew
+ * updated; to co-body 5.1.1
+ * updated; to koa-router 7.3.0
+ * updated; to debug 2.6.9
+ * docs; clarified - #42 by paul42
+ * docs; clarified - #40 by nicodinh
+
 5.0.0 / 2017-03-09
 ==================
 
