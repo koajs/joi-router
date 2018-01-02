@@ -2056,4 +2056,39 @@ describe('koa-joi-router', () => {
       .end();
     });
   });
+
+  describe('param()', () => {
+    it('defines middleware for named route params', function* () {
+      const app = new Koa();
+      const r = router();
+      const users = { '2': 'aaron' };
+
+      r.param('user', async (id, ctx, next) => {
+        ctx.user = await Promise.resolve(users[id]);
+
+        if (!ctx.user) {
+          ctx.status = 404;
+          return;
+        }
+
+        await next();
+      });
+
+      r.get('/user/:user', (ctx) => {
+        ctx.body = `hello ${ctx.user}`;
+      });
+
+      app.use(r.middleware());
+
+      yield test(app).get('/user/1')
+      .expect(404)
+      .end();
+
+      yield test(app).get('/user/2')
+      .expect('hello aaron')
+      .expect(200)
+      .end();
+    });
+
+  });
 });
