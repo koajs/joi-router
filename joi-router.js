@@ -282,7 +282,7 @@ function makeBodyParser(spec) {
             return ctx.throw(400, 'expected multipart');
           }
 
-          opts = spec.validate.multipartOptions || {}; // TODO document this
+          opts = spec.validate.multipartOptions || {};
           opts.autoFields = true;
 
           ctx.request.parts = busboy(ctx, opts);
