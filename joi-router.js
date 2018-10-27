@@ -261,7 +261,7 @@ function makeBodyParser(spec) {
             limit: spec.validate.maxBody
           };
 
-          ctx.request.body = await parse.json(ctx, opts);
+          ctx.request.body = ctx.request.body || await parse.json(ctx, opts);
           break;
 
         case 'form':
@@ -273,7 +273,7 @@ function makeBodyParser(spec) {
             limit: spec.validate.maxBody
           };
 
-          ctx.request.body = await parse.form(ctx, opts);
+          ctx.request.body = ctx.request.body || await parse.form(ctx, opts);
           break;
 
         case 'stream':
