@@ -40,7 +40,7 @@
     "delegates": "1.0.0",
     "flatten": "1.0.2",
     "is-gen-fn": "0.0.1",
-    "joi": "10.2.2",
+    "joi": "14.0.6",
     "koa-router": "7.3.0",
     "methods": "1.1.2",
     "sliced": "1.0.1"
