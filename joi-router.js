@@ -293,8 +293,8 @@ function makeBodyParser(spec) {
           break;
       }
     } catch (err) {
-      if (!spec.validate.continueOnError) return ctx.throw(err);
       captureError(ctx, 'type', err);
+      if (!spec.validate.continueOnError) return ctx.throw(err);
     }
 
     await next();
@@ -335,8 +335,8 @@ function makeValidator(spec) {
         err = validateInput(prop, ctx, spec.validate);
 
         if (err) {
-          if (!spec.validate.continueOnError) return ctx.throw(err);
           captureError(ctx, prop, err);
+          if (!spec.validate.continueOnError) return ctx.throw(err);
         }
       }
     }
