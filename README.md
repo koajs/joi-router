@@ -199,6 +199,9 @@ public.route(routes);
   - `maxBody`: max incoming body size for forms or json input
   - `failure`: HTTP response code to use when input validation fails. default `400`
   - `type`: if validating the request body, this is **required**. either `form`, `json` or `multipart`
+  - `formOptions`: options for co-body form parsing when `type: 'form'`
+  - `jsonOptions`: options for co-body json parsing when `type: 'json'`
+  - `multipartOptions`: options for busboy parsing when `type: 'multipart'`
   - `output`: see [output validation](#validating-output)
   - `continueOnError`: if validation fails, this flags determines if `koa-joi-router` should [continue processing](#handling-errors) the middleware stack or stop and respond with an error immediately. useful when you want your route to handle the error response. default `false`
 - `handler`: **required** async function or function

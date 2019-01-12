@@ -257,9 +257,10 @@ function makeBodyParser(spec) {
             return ctx.throw(400, 'expected json');
           }
 
-          opts = {
-            limit: spec.validate.maxBody
-          };
+          opts = spec.validate.jsonOptions || {};
+          if (typeof opts.limit === 'undefined') {
+            opts.limit = spec.validate.maxBody;
+          }
 
           ctx.request.body = ctx.request.body || await parse.json(ctx, opts);
           break;
@@ -269,9 +270,10 @@ function makeBodyParser(spec) {
             return ctx.throw(400, 'expected x-www-form-urlencoded');
           }
 
-          opts = {
-            limit: spec.validate.maxBody
-          };
+          opts = spec.validate.formOptions || {};
+          if (typeof opts.limit === 'undefined') {
+            opts.limit = spec.validate.maxBody;
+          }
 
           ctx.request.body = ctx.request.body || await parse.form(ctx, opts);
           break;
@@ -282,8 +284,10 @@ function makeBodyParser(spec) {
             return ctx.throw(400, 'expected multipart');
           }
 
-          opts = spec.validate.multipartOptions || {}; // TODO document this
-          opts.autoFields = true;
+          opts = spec.validate.multipartOptions || {};
+          if (typeof opts.autoFields === 'undefined') {
+            opts.autoFields = true;
+          }
 
           ctx.request.parts = busboy(ctx, opts);
           break;
