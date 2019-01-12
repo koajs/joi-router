@@ -165,6 +165,38 @@ describe('koa-joi-router', () => {
         });
       });
 
+      describe('pre', () => {
+        it('should run before validators and handler', (done) => {
+          const r = router();
+
+          r.route({
+            method: 'post',
+            path: '/',
+            validate: {
+              type: 'json',
+              body: {
+                v: Joi.number()
+              }
+            },
+            pre: (ctx, next) => {
+              if (ctx.request.body) {
+                ctx.throw(500, 'pre called after parser');
+              }
+              return next();
+            },
+            handler: (ctx) => {
+              console.log('ctx.request.body', ctx.request.body);
+              ctx.body = ctx.request.body;
+            }
+          });
+
+          return test(makeRouterApp(r))
+            .post('/')
+            .send({v: '42'})
+            .expect({ v: 42 }, done);
+        });
+      });
+
       describe('handler', () => {
         function testHandler(handler, expectedBody, done) {
           const r = router();

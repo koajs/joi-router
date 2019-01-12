@@ -157,6 +157,10 @@ public.route({
     failure: 400,
     continueOnError: false
   },
+  pre: async (ctx, next) => {
+    await checkAuth(ctx);
+    return next();
+  },
   handler: async (ctx) => {
     await createUser(ctx.request.body);
     ctx.status = 201;
@@ -205,6 +209,7 @@ public.route(routes);
   - `output`: see [output validation](#validating-output)
   - `continueOnError`: if validation fails, this flags determines if `koa-joi-router` should [continue processing](#handling-errors) the middleware stack or stop and respond with an error immediately. useful when you want your route to handle the error response. default `false`
 - `handler`: **required** async function or function
+- `pre`: async function or function, will be called before parser and validators
 - `meta`: meta data about this route. `koa-joi-router` ignores this but stores it along with all other route data
 
 ### .get(),post(),put(),delete() etc - HTTP methods

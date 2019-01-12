@@ -117,15 +117,17 @@ Router.prototype._addRoute = function addRoute(spec) {
   const bodyParser = makeBodyParser(spec);
   const specExposer = makeSpecExposer(spec);
   const validator = makeValidator(spec);
+  const preHandlers = spec.pre ? flatten(spec.pre) : [];
   const handlers = flatten(spec.handler);
 
   const args = [
-    spec.path,
+    spec.path
+  ].concat(preHandlers, [
     prepareRequest,
     specExposer,
     bodyParser,
     validator
-  ].concat(handlers);
+  ], handlers);
 
   const router = this.router;
 
@@ -148,6 +150,7 @@ Router.prototype._validateRouteSpec = function validateRouteSpec(spec) {
   assert(ok, 'invalid route path');
 
   checkHandler(spec);
+  checkPreHandler(spec);
   checkMethods(spec);
   checkValidators(spec);
 };
@@ -162,6 +165,22 @@ function checkHandler(spec) {
   }
 
   return flatten(spec.handler).forEach(isSupportedFunction);
+}
+
+/**
+ * @api private
+ */
+
+function checkPreHandler(spec) {
+  if (!spec.pre) {
+    return
+  }
+
+  if (!Array.isArray(spec.pre)) {
+    spec.pre = [spec.pre];
+  }
+
+  return flatten(spec.pre).forEach(isSupportedFunction);
 }
 
 /**
