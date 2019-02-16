@@ -230,39 +230,14 @@ admin.delete('/thing', config, middleware, handler);
 ```
 
 ### .use()
-
-When you need to run middleware before all routes, OR, if you just need to run
-middleware before a specific path, this method is for you.
-
-```js
-const router = require('koa-joi-router');
-const users = router();
-
-users.get('/something', async (ctx, next) => {
-  console.log('this logs before your /something handlers');
-  await next();
-  console.log('this logs after your /something handlers');
-});
-
-users.use(async (ctx, next) => {
-  console.log('this logs before all other handlers');
-  await next();
-  console.log('this logs after all other handlers');
-});
-```
-
-It doesn't matter if you define your routes before or after you call `.use()`,
-the middleware passed to `.use()` will run before your routes and only when
-the path matches.
-
-To run middleware before a specific route, also pass the optional `path`:
+Middleware run in the order they are defined by .use()(or .get(), etc.) They are invoked sequentially, requests start at the first middleware and work their way "down" the middleware stack which matches Express 4 API.
 
 ```js
 const router = require('koa-joi-router');
 const users = router();
 
 users.get('/:id', handler);
-users.use('/:id', runThisBeforeHandler);
+users.use('/:id', runThisAfterHandler);
 ```
 
 ### .prefix()
