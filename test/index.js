@@ -1949,8 +1949,8 @@ describe('koa-joi-router', () => {
   });
 
   describe('use()', () => {
-    describe('runs middleware before routes', () => {
-      it('when called before routes', function* () {
+    describe('applies middleware in the order it was added', () => {
+      it('can apply middleware before routes', function* () {
         const r = router();
         let middlewareRanFirst = false;
 
@@ -1972,7 +1972,7 @@ describe('koa-joi-router', () => {
         .end();
       });
 
-      it('not after routes', function* () {
+      it('can apply middleware after routes', function* () {
         const r = router();
         let middlewareRanFirst = false;
 
