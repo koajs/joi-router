@@ -1856,7 +1856,7 @@ describe('koa-joi-router', () => {
             break;
           case 'head':
             // HEAD must not return a body
-            req.expect('', done);
+            req.expect(undefined, done);
             break;
           default:
             // Otherwise, test the request normally.
