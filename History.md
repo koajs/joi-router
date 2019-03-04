@@ -1,3 +1,11 @@
+
+5.3.0 / 2019-03-04
+==================
+
+  * deps; bump await-busboy, koa-router, clone, co-body, debug
+  * docs; update description of .use() API by wdanxna
+  * tests; fix head response body check
+
 5.2.0 / 2019-01-12
 ==================
 
