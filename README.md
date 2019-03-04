@@ -205,7 +205,9 @@ public.route(routes);
   - `type`: if validating the request body, this is **required**. either `form`, `json` or `multipart`
   - `formOptions`: options for co-body form parsing when `type: 'form'`
   - `jsonOptions`: options for co-body json parsing when `type: 'json'`
-  - `multipartOptions`: options for [busboy][] parsing when `type: 'multipart'` eg `{ limits: { files: 1 }}`
+  - `multipartOptions`: options for [busboy][] parsing when `type: 'multipart'`
+     - [any busboy constructor option][busboy]. eg `{ limits: { files: 1 }}`
+     - `autoFields`: Determines whether form fields should be auto-parsed (default: `true`). See the [await-busboy docs](https://github.com/aheckmann/await-busboy#parts--parsestream-options).
   - `output`: see [output validation](#validating-output)
   - `continueOnError`: if validation fails, this flags determines if `koa-joi-router` should [continue processing](#handling-errors) the middleware stack or stop and respond with an error immediately. useful when you want your route to handle the error response. default `false`
 - `handler`: **required** async function or function
