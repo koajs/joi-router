@@ -41,7 +41,7 @@
     "flatten": "1.0.2",
     "is-gen-fn": "0.0.1",
     "joi": "14.0.6",
-    "koa-router": "7.3.0",
+    "koa-router": "7.4.0",
     "methods": "1.1.2",
     "sliced": "1.0.1"
   },
