@@ -46,15 +46,13 @@
     "sliced": "1.0.1"
   },
   "devDependencies": {
-    "co-mocha": "^1.1.0",
-    "co-supertest": "^0.0.8",
     "eslint": "^3.17.1",
     "eslint-config-pebble": "^4.0.0",
     "eslint-plugin-standard": "^2.0.0",
     "istanbul": "1.1.0-alpha.1",
     "koa": "^2.1",
-    "mocha": "^3.0.2",
-    "supertest": "^0.15.0"
+    "mocha": "^6.0.2",
+    "supertest": "^3.4.2"
   },
   "eslintConfig": {
     "extends": [
