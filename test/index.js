@@ -1664,7 +1664,7 @@ describe('koa-joi-router', () => {
 
       describe('headers', () => {
         const headers = Joi.object({
-          n: Joi.number().max(10).required()
+          n: Joi.string().max(3).required()
         }).options({
           allowUnknown: true
         });
@@ -1683,7 +1683,7 @@ describe('koa-joi-router', () => {
               }
             },
             handler: (ctx) => {
-              ctx.set('n', '3');
+              ctx.set('n', '  3');
               ctx.body = 'RWC';
             }
           });
@@ -1715,7 +1715,7 @@ describe('koa-joi-router', () => {
               }
             },
             handler: (ctx) => {
-              ctx.set('n', 100);
+              ctx.set('n', 1000);
               ctx.body = 'RWC';
             }
           });
@@ -1723,10 +1723,8 @@ describe('koa-joi-router', () => {
           const app = new Koa();
           app.use(r.middleware());
 
-          it.only('casts output values according to Joi rules', async () => {
-            // n should be cast to a number
-            //await test(app).post('/headers/cast').expect('n', 3).expect(200);
-            await test(app).post('/headers/cast').expect('content-length', 3).expect(200);
+          it('casts output values according to Joi rules', async () => {
+            await test(app).post('/headers/cast').expect('n', '3').expect(200);
           });
 
           describe('but not included in response', () => {
