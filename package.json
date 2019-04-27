@@ -13,8 +13,8 @@
   ],
   "scripts": {
     "test": "npm run test-cov && npm run lint",
-    "lint": "NODE_ENV=test ./node_modules/eslint/bin/eslint.js test/ --quiet",
-    "lint-fix": "NODE_ENV=test ./node_modules/eslint/bin/eslint.js test/ --quiet --fix",
+    "lint": "NODE_ENV=test eslint ./*.js",
+    "lint-fix": "NODE_ENV=test eslint ./*.js --quiet --fix",
     "test-cov": "NODE_ENV=test istanbul cover _mocha -- --reporter spec --bail",
     "open-cov": "open coverage/lcov-report/index.html",
     "test-only": "NODE_ENV=test mocha --reporter spec --bail"
