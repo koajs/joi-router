@@ -436,10 +436,9 @@ function makeValidator(spec) {
 }
 
 /**
- * Exposes route spec.
- *
- * @param {Object} spec
- * @return {async function}
+ * Exposes route spec
+ * @param {Object} spec The route spec
+ * @returns {async Function} Middleware
  * @api private
  */
 function makeSpecExposer(spec) {

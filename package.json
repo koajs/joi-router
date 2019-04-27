@@ -46,9 +46,7 @@
     "sliced": "1.0.1"
   },
   "devDependencies": {
-    "eslint": "^3.17.1",
-    "eslint-config-pebble": "^4.0.0",
-    "eslint-plugin-standard": "^2.0.0",
+    "eslint": "^4",
     "istanbul": "1.1.0-alpha.1",
     "koa": "^2.1",
     "mocha": "^6.0.2",
@@ -56,10 +54,13 @@
   },
   "eslintConfig": {
     "extends": [
-      "pebble"
+      "eslint:recommended"
     ],
     "parserOptions": {
       "ecmaVersion": 2017
+    },
+    "env": {
+      "node": true
     }
   }
 }
