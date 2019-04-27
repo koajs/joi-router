@@ -14,8 +14,8 @@
   "scripts": {
     "test": "npm run test-cov && npm run lint",
     "lint": "NODE_ENV=test eslint ./*.js",
-    "lint-fix": "NODE_ENV=test eslint ./*.js --quiet --fix",
-    "test-cov": "NODE_ENV=test istanbul cover _mocha -- --reporter spec --bail",
+    "lint-fix": "NODE_ENV=test eslint ./*.js --fix",
+    "test-cov": "NODE_ENV=test nyc mocha -- --reporter spec --bail",
     "open-cov": "open coverage/lcov-report/index.html",
     "test-only": "NODE_ENV=test mocha --reporter spec --bail"
   },
@@ -33,6 +33,7 @@
   },
   "homepage": "https://github.com/koajs/joi-router",
   "dependencies": {
+    "@hapi/joi": "15.0.0",
     "await-busboy": "1.0.3",
     "clone": "2.1.2",
     "co-body": "6.0.0",
@@ -40,17 +41,16 @@
     "delegates": "1.0.0",
     "flatten": "1.0.2",
     "is-gen-fn": "0.0.1",
-    "joi": "14.0.6",
     "koa-router": "7.4.0",
     "methods": "1.1.2",
     "sliced": "1.0.1"
   },
   "devDependencies": {
-    "eslint": "^4",
-    "istanbul": "1.1.0-alpha.1",
+    "eslint": "^5",
     "koa": "^2.1",
     "mocha": "^6.0.2",
-    "supertest": "^3.4.2"
+    "nyc": "^14.0.0",
+    "supertest": "^4"
   },
   "eslintConfig": {
     "extends": [
