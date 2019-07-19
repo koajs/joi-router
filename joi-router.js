@@ -474,7 +474,7 @@ function validateInput(prop, ctx, validate) {
   debug('validating %s', prop);
 
   const request = ctx.request;
-  const res = Joi.validate(request[prop], validate[prop]);
+  const res = Joi.validate(request[prop], validate[prop], (validate.validateOptions || {}));
 
   if (res.error) {
     res.error.status = validate.failure;
