@@ -41,9 +41,9 @@
     "delegates": "1.0.0",
     "flatten": "1.0.3",
     "is-gen-fn": "0.0.1",
-    "@koa/router": "8.0.2",
     "methods": "1.1.2",
-    "sliced": "1.0.1"
+    "sliced": "1.0.1",
+    "@koa/router": "8.0.2"
   },
   "devDependencies": {
     "eslint": "^6.7.2",
