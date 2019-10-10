@@ -1,6 +1,6 @@
 'use strict';
 
-const router = require('../');
+const routerFactory = require('../');
 const Koa = require('koa');
 const assert = require('assert');
 const request = require('supertest');
@@ -9,6 +9,19 @@ const Joi = require('@hapi/joi');
 const methods = require('methods');
 const slice = require('sliced');
 const MiddlewareGenerator = require('./test-utils').MiddlewareGenerator;
+
+function joiValidatorBuilder(schema) {
+  const validator = Joi.compile(schema);
+  return (obj) => {
+    return validator.validate(obj)
+  }
+}
+
+const router = () => {
+  return routerFactory({
+    validatorBuilder: joiValidatorBuilder
+  })
+}
 
 function makeRouterApp(router) {
   const app = new Koa();
@@ -20,7 +33,7 @@ function test(app) {
   return request(http.createServer(app.callback()));
 }
 
-describe('koa-joi-router', () => {
+describe('koa-not-so-joi-router', () => {
   it('exposes a function', (done) => {
     assert.equal('function', typeof router);
     done();
@@ -28,12 +41,7 @@ describe('koa-joi-router', () => {
 
   it('is a constructor', (done) => {
     const r = router();
-    assert(r instanceof router);
-    done();
-  });
-
-  it('exposes the Joi module', (done) => {
-    assert.equal(router.Joi, Joi);
+    assert(r instanceof routerFactory);
     done();
   });
 
@@ -182,7 +190,6 @@ describe('koa-joi-router', () => {
               return next();
             },
             handler: (ctx) => {
-              console.log('ctx.request.body', ctx.request.body);
               ctx.body = ctx.request.body;
             }
           });

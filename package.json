@@ -1,8 +1,8 @@
 {
-  "name": "koa-joi-router",
+  "name": "koa-not-so-joi-router",
   "version": "6.0.2",
   "description": "Configurable, input validated routing for koa.",
-  "main": "joi-router.js",
+  "main": "router.js",
   "keywords": [
     "joi",
     "koa",
@@ -26,12 +26,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/koajs/joi-router.git"
+    "url": "https://github.com/janzal/not-so-joi-router.git"
   },
   "bugs": {
-    "url": "https://github.com/koajs/joi-router/issues"
+    "url": "https://github.com/janzal/not-so-joi-router/issues"
   },
-  "homepage": "https://github.com/koajs/joi-router",
+  "homepage": "https://github.com/janzal/not-so-joi-router",
   "dependencies": {
     "@hapi/joi": "15.1.1",
     "await-busboy": "1.0.3",
@@ -50,7 +50,8 @@
     "koa": "^2.11.0",
     "mocha": "^6.2.2",
     "nyc": "^14.0.0",
-    "supertest": "^4"
+    "supertest": "^4",
+    "@hapi/joi": "^16.1.7"
   },
   "eslintConfig": {
     "extends": [

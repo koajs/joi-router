@@ -8,7 +8,6 @@ const methods = require('methods');
 const KoaRouter = require('@koa/router');
 const busboy = require('await-busboy');
 const parse = require('co-body');
-const Joi = require('@hapi/joi');
 const slice = require('sliced');
 const delegate = require('delegates');
 const clone = require('clone');
@@ -16,16 +15,22 @@ const OutputValidator = require('./output-validator');
 
 module.exports = Router;
 
-// expose Joi for use in applications
-Router.Joi = Joi;
+function identity(obj) {
+  return obj;
+}
 
-function Router() {
+function Router({
+  validatorBuilder
+} = { validatorBuilder: identity }) {
   if (!(this instanceof Router)) {
-    return new Router();
+    return new Router({
+      validatorBuilder
+    });
   }
 
   this.routes = [];
   this.router = new KoaRouter();
+  this.validatorBuilder = validatorBuilder
 }
 
 /**
@@ -116,7 +121,7 @@ Router.prototype._addRoute = function addRoute(spec) {
 
   const bodyParser = makeBodyParser(spec);
   const specExposer = makeSpecExposer(spec);
-  const validator = makeValidator(spec);
+  const validator = makeValidator(spec, this.validatorBuilder);
   const preHandlers = spec.pre ? flatten(spec.pre) : [];
   const handlers = flatten(spec.handler);
 
@@ -404,7 +409,7 @@ function captureError(ctx, type, err) {
  * @api private
  */
 
-function makeValidator(spec) {
+function makeValidator(spec, validatorBuilder) {
   const props = 'header query params body'.split(' ');
 
   return async function validator(ctx, next) {
@@ -416,7 +421,7 @@ function makeValidator(spec) {
       const prop = props[i];
 
       if (spec.validate[prop]) {
-        err = validateInput(prop, ctx, spec.validate);
+        err = validateInput(prop, ctx, spec.validate, validatorBuilder);
 
         if (err) {
           captureError(ctx, prop, err);
@@ -430,7 +435,7 @@ function makeValidator(spec) {
     if (spec.validate._outputValidator) {
       debug('validating output');
 
-      err = spec.validate._outputValidator.validate(ctx);
+      err = spec.validate._outputValidator.validate(ctx, validatorBuilder);
       if (err) {
         err.status = 500;
         return ctx.throw(err);
@@ -474,12 +479,12 @@ async function prepareRequest(ctx, next) {
  * @api private
  */
 
-function validateInput(prop, ctx, validate) {
+function validateInput(prop, ctx, validate, validatorBuilder) {
   debug('validating %s', prop);
 
   const request = ctx.request;
-  const schema = Joi.compile(validate[prop]);
-  const res = schema.validate(request[prop]);
+  const validator = validatorBuilder(validate[prop]);
+  const res = validator(request[prop]);
 
   if (res.error) {
     res.error.status = validate.failure;

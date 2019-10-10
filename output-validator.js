@@ -39,13 +39,13 @@ function assertNoOverlappingStatusRules(rules) {
   }
 };
 
-OutputValidator.prototype.validate = function(ctx) {
+OutputValidator.prototype.validate = function(ctx, validatorBuilder) {
   assert(ctx, 'missing request context!');
 
   for (let i = 0; i < this.rules.length; ++i) {
     const rule = this.rules[i];
     if (rule.matches(ctx)) {
-      return rule.validateOutput(ctx);
+      return rule.validateOutput(ctx, validatorBuilder);
     }
   }
 };
