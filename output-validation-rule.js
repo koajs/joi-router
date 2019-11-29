@@ -63,7 +63,7 @@ OutputValidationRule.prototype.matches = function matches(ctx) {
 };
 
 
-OutputValidationRule.prototype.makeSchema = function makeSchema(obj) {
+function makeSchema(obj) {
   if (typeof obj === 'object' && !Joi.isSchema(obj)) {
     return Joi.object().keys(obj)
   }
@@ -78,7 +78,7 @@ OutputValidationRule.prototype.validateOutput = function validateOutput(ctx) {
   let result;
 
   if (this.spec.headers) {
-    result = this.makeSchema(this.spec.headers).validate(ctx.response.headers);
+    result = makeSchema(this.spec.headers).validate(ctx.response.headers);
     if (result.error) return result.error;
     // use casted values
     ctx.set(result.value);
