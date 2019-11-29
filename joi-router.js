@@ -460,6 +460,14 @@ async function prepareRequest(ctx, next) {
   await next();
 }
 
+
+function makeSchema(obj) {
+  if (typeof obj === 'object' && !Joi.isSchema(obj)) {
+    return Joi.object().keys(obj)
+  }
+  return obj
+}
+
 /**
  * Validates request[prop] data with the defined validation schema.
  *
@@ -474,7 +482,11 @@ function validateInput(prop, ctx, validate) {
   debug('validating %s', prop);
 
   const request = ctx.request;
-  const res = Joi.validate(request[prop], validate[prop]);
+  let schema = validate[prop]
+  if (typeof schema === 'object' && !Joi.isSchema(schema)) {
+    schema = Joi.object().keys(schema)
+  }
+  const res = makeSchema(validate[prop]).validate(request[prop]);
 
   if (res.error) {
     res.error.status = validate.failure;

@@ -62,6 +62,14 @@ OutputValidationRule.prototype.matches = function matches(ctx) {
   return false;
 };
 
+
+OutputValidationRule.prototype.makeSchema = function makeSchema(obj) {
+  if (typeof obj === 'object' && !Joi.isSchema(obj)) {
+    return Joi.object().keys(obj)
+  }
+  return obj
+}
+
 /**
  * Validates this rule against the given `ctx`.
  */
@@ -70,14 +78,14 @@ OutputValidationRule.prototype.validateOutput = function validateOutput(ctx) {
   let result;
 
   if (this.spec.headers) {
-    result = Joi.validate(ctx.response.headers, this.spec.headers);
+    result = this.makeSchema(this.spec.headers).validate(ctx.response.headers);
     if (result.error) return result.error;
     // use casted values
     ctx.set(result.value);
   }
 
   if (this.spec.body) {
-    result = Joi.validate(ctx.body, this.spec.body);
+    result = this.makeSchema(this.spec.body).validate(ctx.body);
     if (result.error) return result.error;
     // use casted values
     ctx.body = result.value;
