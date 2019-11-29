@@ -85,7 +85,7 @@ OutputValidationRule.prototype.validateOutput = function validateOutput(ctx) {
   }
 
   if (this.spec.body) {
-    result = this.makeSchema(this.spec.body).validate(ctx.body);
+    result = makeSchema(this.spec.body).validate(ctx.body);
     if (result.error) return result.error;
     // use casted values
     ctx.body = result.value;
