@@ -308,6 +308,8 @@ function makeJSONBodyParser(spec) {
     if (!ctx.request.is('json')) {
       return ctx.throw(400, 'expected json');
     }
+
+    // eslint-disable-next-line require-atomic-updates
     ctx.request.body = ctx.request.body || await parse.json(ctx, opts);
     await next();
   };
@@ -330,6 +332,8 @@ function makeFormBodyParser(spec) {
     if (!ctx.request.is('urlencoded')) {
       return ctx.throw(400, 'expected x-www-form-urlencoded');
     }
+
+    // eslint-disable-next-line require-atomic-updates
     ctx.request.body = ctx.request.body || await parse.form(ctx, opts);
     await next();
   };

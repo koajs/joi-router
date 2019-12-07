@@ -39,16 +39,16 @@
     "co-body": "6.0.0",
     "debug": "4.1.1",
     "delegates": "1.0.0",
-    "flatten": "1.0.2",
+    "flatten": "1.0.3",
     "is-gen-fn": "0.0.1",
     "@koa/router": "8.0.2",
     "methods": "1.1.2",
     "sliced": "1.0.1"
   },
   "devDependencies": {
-    "eslint": "^5",
-    "koa": "^2.1",
-    "mocha": "^6.0.2",
+    "eslint": "^6.7.2",
+    "koa": "^2.11.0",
+    "mocha": "^6.2.2",
     "nyc": "^14.0.0",
     "supertest": "^4"
   },
