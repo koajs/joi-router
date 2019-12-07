@@ -46,12 +46,12 @@
     "@hapi/joi": "15.1.1"
   },
   "devDependencies": {
-    "@hapi/joi": "^16.1.7",
     "eslint": "^6.7.2",
     "koa": "^2.11.0",
     "mocha": "^6.2.2",
     "nyc": "^14.0.0",
-    "supertest": "^4"
+    "supertest": "^4",
+    "@hapi/joi": "^16.1.7"
   },
   "eslintConfig": {
     "extends": [
