@@ -268,29 +268,6 @@ async function noopMiddleware(ctx, next) {
 }
 
 /**
- * Handles parser internal errors
- * @param  {Object} spec         [description]
- * @param  {function} parsePayload [description]
- * @return {async function}              [description]
- * @api private
- */
-
-function wrapError(spec, parsePayload) {
-  return async function errorHandler(ctx, next) {
-    try {
-      await parsePayload(ctx, next);
-    } catch (err) {
-      captureError(ctx, 'type', err);
-      if (spec.validate.continueOnError) {
-        return await next();
-      } else {
-        return ctx.throw(err);
-      }
-    }
-  };
-}
-
-/**
  * Creates JSON body parser middleware.
  *
  * @param {Object} spec
@@ -298,19 +275,16 @@ function wrapError(spec, parsePayload) {
  * @api private
  */
 
-function makeJSONBodyParser(spec) {
+async function makeJSONBodyParser(spec, ctx) {
   const opts = spec.validate.jsonOptions || {};
   if (typeof opts.limit === 'undefined') {
     opts.limit = spec.validate.maxBody;
   }
 
-  return async function parseJSONPayload(ctx, next) {
-    if (!ctx.request.is('json')) {
-      return ctx.throw(400, 'expected json');
-    }
-    ctx.request.body = ctx.request.body || await parse.json(ctx, opts);
-    await next();
-  };
+  if (!ctx.request.is('json')) {
+    return ctx.throw(400, 'expected json');
+  }
+  ctx.request.body = ctx.request.body || await parse.json(ctx, opts);
 }
 
 /**
@@ -321,18 +295,15 @@ function makeJSONBodyParser(spec) {
  * @api private
  */
 
-function makeFormBodyParser(spec) {
+async function makeFormBodyParser(spec, ctx) {
   const opts = spec.validate.formOptions || {};
   if (typeof opts.limit === 'undefined') {
     opts.limit = spec.validate.maxBody;
   }
-  return async function parseFormBody(ctx, next) {
-    if (!ctx.request.is('urlencoded')) {
-      return ctx.throw(400, 'expected x-www-form-urlencoded');
-    }
-    ctx.request.body = ctx.request.body || await parse.form(ctx, opts);
-    await next();
-  };
+  if (!ctx.request.is('urlencoded')) {
+    return ctx.throw(400, 'expected x-www-form-urlencoded');
+  }
+  ctx.request.body = ctx.request.body || await parse.form(ctx, opts);
 }
 
 /**
@@ -343,18 +314,15 @@ function makeFormBodyParser(spec) {
  * @api private
  */
 
-function makeMultipartParser(spec) {
+async function makeMultipartParser(spec, ctx) {
   const opts = spec.validate.multipartOptions || {};
   if (typeof opts.autoFields === 'undefined') {
     opts.autoFields = true;
   }
-  return async function parseMultipart(ctx, next) {
-    if (!ctx.request.is('multipart/*')) {
-      return ctx.throw(400, 'expected multipart');
-    }
-    ctx.request.parts = busboy(ctx, opts);
-    await next();
-  };
+  if (!ctx.request.is('multipart/*')) {
+    return ctx.throw(400, 'expected multipart');
+  }
+  ctx.request.parts = busboy(ctx, opts);
 }
 
 /**
@@ -367,18 +335,59 @@ function makeMultipartParser(spec) {
 
 function makeBodyParser(spec) {
   if (!(spec.validate && spec.validate.type)) return noopMiddleware;
+  return async function parsePayload(ctx, next) {
 
-  switch (spec.validate.type) {
-    case 'json':
-      return wrapError(spec, makeJSONBodyParser(spec));
-    case 'form':
-      return wrapError(spec, makeFormBodyParser(spec));
-    case 'stream':
-    case 'multipart':
-      return wrapError(spec, makeMultipartParser(spec));
-    default:
-      throw new Error(`unsupported body type: ${spec.validate.type}`);
-  }
+    try {
+      let type = spec.validate.type.find(type => {
+        switch (type) {
+          case 'json':
+            return ctx.request.is('json');
+          case 'form':
+            return ctx.request.is('urlencoded');
+          case 'stream':
+          case 'multipart':
+            return ctx.request.is('multipart/*');
+        }
+      });
+
+      if (type === undefined)
+        return ctx.throw(
+          400,
+          `expected ${spec.validate.type
+            .map(type => {
+              switch (type) {
+                case 'json':
+                  return 'json';
+                case 'form':
+                  return 'x-www-form-urlencoded';
+                case 'stream':
+                case 'multipart':
+                  return 'multipart';
+              }
+            })
+            .join(', ')}`
+        );
+
+      switch (type) {
+        case 'json':
+          await makeJSONBodyParser(spec, ctx)
+          break;
+        case 'form':
+          await makeFormBodyParser(spec, ctx)
+          break;
+        case 'stream':
+        case 'multipart':
+          await makeMultipartParser(spec, ctx)
+          break;
+      }
+    } catch (err) {
+      captureError(ctx, 'type', err);
+      if (!spec.validate.continueOnError) return ctx.throw(err);
+    }
+
+    await next();
+  };
+
 }
 
 /**
@@ -543,7 +552,7 @@ function validateInput(prop, ctx, validate) {
 methods.forEach((method) => {
   method = method.toLowerCase();
 
-  Router.prototype[method] = function(path) {
+  Router.prototype[method] = function (path) {
     // path, handler1, handler2, ...
     // path, config, handler1
     // path, config, handler1, handler2, ...
