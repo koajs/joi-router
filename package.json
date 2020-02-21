@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/koajs/joi-router",
   "dependencies": {
-    "@hapi/joi": "15.0.0",
+    "@hapi/joi": "15.1.1",
     "await-busboy": "1.0.3",
     "clone": "2.1.2",
     "co-body": "6.0.0",
