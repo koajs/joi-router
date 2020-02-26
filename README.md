@@ -23,7 +23,7 @@ Easy, rich and fully validated [koa][] routing.
 [co-body]: https://github.com/visionmedia/co-body
 [await-busboy]: https://github.com/aheckmann/await-busboy
 [joi]: https://github.com/hapijs/joi
-[koa-router]: https://github.com/alexmingoia/koa-router
+[@koa/router]: https://github.com/koajs/router
 [generate API documentation]: https://github.com/a-s-o/koa-docs
 [path-to-regexp]: https://github.com/pillarjs/path-to-regexp
 
@@ -32,7 +32,7 @@ Easy, rich and fully validated [koa][] routing.
 - built in input validation using [joi][]
 - built in [output validation](#validating-output) using [joi][]
 - built in body parsing using [co-body][] and [await-busboy][]
-- built on the great [koa-router][]
+- built on the great [@koa/router][]
 - [exposed route definitions](#routes) for later analysis
 - string path support
 - [regexp-like path support](#path-regexps)
@@ -263,7 +263,7 @@ users.prefix('/user');
 
 Defines middleware for named route parameters. Useful for auto-loading or validation.
 
-_See [koa-router](https://github.com/alexmingoia/koa-router#routerparamparam-middleware--router)_
+_See [@koa/router](https://github.com/koajs/router/blob/master/API.md#module_koa-router--Router+param)_
 
 ```js
 const router = require('koa-joi-router');
