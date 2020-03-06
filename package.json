@@ -1,5 +1,5 @@
 {
-  "name": "koa-not-so-joi-router",
+  "name": "koa-joi-router",
   "version": "6.0.2",
   "description": "Configurable, input validated routing for koa.",
   "main": "router.js",
@@ -26,12 +26,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/janzal/not-so-joi-router.git"
+    "url": "https://github.com/smartlook/joi-router.git"
   },
   "bugs": {
-    "url": "https://github.com/janzal/not-so-joi-router/issues"
+    "url": "https://github.com/smartlook/joi-router/issues"
   },
-  "homepage": "https://github.com/janzal/not-so-joi-router",
+  "homepage": "https://github.com/smartlook/joi-router",
   "dependencies": {
     "await-busboy": "1.0.3",
     "clone": "2.1.2",
@@ -42,8 +42,7 @@
     "is-gen-fn": "0.0.1",
     "methods": "1.1.2",
     "sliced": "1.0.1",
-    "@koa/router": "8.0.2",
-    "@hapi/joi": "15.1.1"
+    "@koa/router": "8.0.2"
   },
   "devDependencies": {
     "eslint": "^6.7.2",
