@@ -70,14 +70,14 @@ OutputValidationRule.prototype.validateOutput = function validateOutput(ctx) {
   let result;
 
   if (this.spec.headers) {
-    result = Joi.validate(ctx.response.headers, this.spec.headers);
+    result = this.spec.headers.validate(ctx.response.headers);
     if (result.error) return result.error;
     // use casted values
     ctx.set(result.value);
   }
 
   if (this.spec.body) {
-    result = Joi.validate(ctx.body, this.spec.body);
+    result = this.spec.body.validate(ctx.body);
     if (result.error) return result.error;
     // use casted values
     ctx.body = result.value;
