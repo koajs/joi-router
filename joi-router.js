@@ -478,7 +478,8 @@ function validateInput(prop, ctx, validate) {
   debug('validating %s', prop);
 
   const request = ctx.request;
-  const res = Joi.validate(request[prop], validate[prop]);
+  const schema = Joi.compile(validate[prop]);
+  const res = schema.validate(request[prop]);
 
   if (res.error) {
     res.error.status = validate.failure;
