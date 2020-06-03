@@ -22,7 +22,7 @@
   "engines": {
     "node": ">= 7.6.0"
   },
-  "author": "Aaron Heckmann <aaron.heckmann+github@gmail.com>",
+  "author": "Aaron Heckmann <aaron.heckmann+github@gmail.com>, Jan Zaloudek <honza@smartlook.com>",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -33,6 +33,7 @@
   },
   "homepage": "https://github.com/smartlook/joi-router",
   "dependencies": {
+    "@koa/router": "^9.0.1",
     "await-busboy": "1.0.3",
     "clone": "2.1.2",
     "co-body": "6.0.0",
@@ -41,16 +42,15 @@
     "flatten": "1.0.3",
     "is-gen-fn": "0.0.1",
     "methods": "1.1.2",
-    "sliced": "1.0.1",
-    "@koa/router": "8.0.2"
+    "sliced": "1.0.1"
   },
   "devDependencies": {
+    "@hapi/joi": "^16.1.7",
     "eslint": "^6.7.2",
-    "koa": "^2.11.0",
-    "mocha": "^6.2.2",
+    "koa": "^2.12.0",
+    "mocha": "^6.2.3",
     "nyc": "^14.0.0",
-    "supertest": "^4",
-    "@hapi/joi": "^16.1.7"
+    "supertest": "^4"
   },
   "eslintConfig": {
     "extends": [
