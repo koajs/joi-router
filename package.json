@@ -1,66 +1,61 @@
 {
-  "name": "koa-joi-router",
-  "version": "6.0.2",
-  "description": "Configurable, input validated routing for koa.",
-  "main": "router.js",
-  "keywords": [
-    "joi",
-    "koa",
-    "router",
-    "validate",
-    "validator",
-    "validation"
-  ],
-  "scripts": {
-    "test": "npm run test-cov && npm run lint",
-    "lint": "NODE_ENV=test eslint ./*.js",
-    "lint-fix": "NODE_ENV=test eslint ./*.js --fix",
-    "test-cov": "NODE_ENV=test nyc mocha -- --reporter spec --bail",
-    "open-cov": "open coverage/lcov-report/index.html",
-    "test-only": "NODE_ENV=test mocha --reporter spec --bail"
-  },
-  "engines": {
-    "node": ">= 7.6.0"
-  },
-  "author": "Aaron Heckmann <aaron.heckmann+github@gmail.com>, Jan Zaloudek <honza@smartlook.com>",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/smartlook/joi-router.git"
-  },
-  "bugs": {
-    "url": "https://github.com/smartlook/joi-router/issues"
-  },
-  "homepage": "https://github.com/smartlook/joi-router",
-  "dependencies": {
-    "@koa/router": "^9.0.1",
-    "await-busboy": "1.0.3",
-    "clone": "2.1.2",
-    "co-body": "6.0.0",
-    "debug": "4.1.1",
-    "delegates": "1.0.0",
-    "flatten": "1.0.3",
-    "is-gen-fn": "0.0.1",
-    "methods": "1.1.2",
-    "sliced": "1.0.1"
-  },
-  "devDependencies": {
-    "@hapi/joi": "^16.1.7",
-    "eslint": "^6.7.2",
-    "koa": "^2.12.0",
-    "mocha": "^6.2.3",
-    "nyc": "^14.0.0",
-    "supertest": "^4"
-  },
-  "eslintConfig": {
-    "extends": [
-      "eslint:recommended"
-    ],
-    "parserOptions": {
-      "ecmaVersion": 2017
-    },
-    "env": {
-      "node": true
-    }
-  }
+	"name": "@janzal/koa-joi-router",
+	"version": "8.0.0",
+	"description": "Configurable, input validated routing for koa.",
+	"main": "build/index.js",
+	"types": "build/index.d.ts",
+	"keywords": [
+		"joi",
+		"koa",
+		"router",
+		"validate",
+		"validator",
+		"validation"
+	],
+	"scripts": {
+		"prepublish": "npm run build",
+		"build": "tsc",
+		"test": "npm run build && npm run test-cov && npm run prettier",
+		"prettier": "prettier --write *.ts",
+		"test-cov": "NODE_ENV=test nyc mocha -- --reporter spec --bail",
+		"open-cov": "open coverage/lcov-report/index.html",
+		"test-only": "NODE_ENV=test mocha --reporter spec --bail"
+	},
+	"engines": {
+		"node": ">= 10.0.0"
+	},
+	"author": "Jan Zaloudek <honza@smartlook.com>, Aaron Heckmann <aaron.heckmann+github@gmail.com>",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/smartlook/joi-router.git"
+	},
+	"bugs": {
+		"url": "https://github.com/smartlook/joi-router/issues"
+	},
+	"homepage": "https://github.com/smartlook/joi-router",
+	"dependencies": {
+		"@koa/router": "^9.0.1",
+		"await-busboy": "1.0.3",
+		"clone": "2.1.2",
+		"co-body": "6.0.0",
+		"debug": "4.1.1",
+		"delegates": "1.0.0",
+		"flatten": "1.0.3",
+		"is-gen-fn": "0.0.1",
+		"methods": "1.1.2",
+		"prettier": "^2.0.5",
+		"sliced": "1.0.1"
+	},
+	"devDependencies": {
+		"@hapi/joi": "^16.1.7",
+		"@types/co-body": "^5.1.0",
+		"@types/debug": "^4.1.5",
+		"@types/koa": "^2.11.3",
+		"@types/koa__router": "^8.0.2",
+		"koa": "^2.12.0",
+		"mocha": "^6.2.3",
+		"nyc": "^14.0.0",
+		"supertest": "^4"
+	}
 }

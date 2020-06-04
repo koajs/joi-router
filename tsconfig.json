@@ -1,0 +1,31 @@
+{
+	"compilerOptions": {
+		"target": "es2018",
+		"lib": ["ES2019"],
+		"module": "commonjs",
+		"declaration": true,
+		"outDir": "./build",
+
+		"strict": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"strictFunctionTypes": true,
+		"strictBindCallApply": true,
+		"strictPropertyInitialization": true,
+		"noImplicitThis": true,
+		"alwaysStrict": true,
+
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+
+		"moduleResolution": "node",
+		"esModuleInterop": true,
+
+		"sourceMap": true,
+
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true
+	}
+}
