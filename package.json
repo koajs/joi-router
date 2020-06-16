@@ -1,6 +1,6 @@
 {
 	"name": "@janzal/koa-joi-router",
-	"version": "8.0.1",
+	"version": "8.1.0",
 	"description": "Configurable, input validated routing for koa.",
 	"main": "build/index.js",
 	"types": "build/index.d.ts",
