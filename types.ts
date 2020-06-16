@@ -30,13 +30,13 @@ export interface IValidateObject<Schema> {
 	continueOnError?: boolean
 }
 
-export interface Config<Schema> {
+export interface Config<Meta, Schema> {
 	pre?: Handler
 	validate?: IValidateObject<Schema>
-	meta?: any
+	meta?: Meta
 }
 
-export interface Spec<Schema> extends Config<Schema> {
+export interface Spec<Meta, Schema> extends Config<Meta, Schema> {
 	method: 'get' | 'put' | 'post' | 'patch' | 'delete' | 'del'
 	path: string | RegExp
 	handler: Handler

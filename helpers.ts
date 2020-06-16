@@ -28,7 +28,10 @@ export async function identityValidator<Schema>(
  * @return {async function}
  * @api private
  */
-function wrapError<Schema>(spec: Spec<Schema>, parsePayload: any): Middleware {
+function wrapError<Meta, Schema>(
+	spec: Spec<Meta, Schema>,
+	parsePayload: any
+): Middleware {
 	return async function errorHandler(ctx, next) {
 		try {
 			await parsePayload(ctx, next)
@@ -50,7 +53,9 @@ function wrapError<Schema>(spec: Spec<Schema>, parsePayload: any): Middleware {
  * @return {async function}
  * @api private
  */
-function makeJSONBodyParser<Schema>(spec: Spec<Schema>): Middleware {
+function makeJSONBodyParser<Meta, Schema>(
+	spec: Spec<Meta, Schema>
+): Middleware {
 	const opts = spec?.validate?.jsonOptions ?? {}
 	opts.limit = opts.limit ?? spec?.validate?.maxBody
 
@@ -75,7 +80,7 @@ function makeJSONBodyParser<Schema>(spec: Spec<Schema>): Middleware {
  * @api private
  */
 
-export function makeBodyParser<Schema>(spec: Spec<Schema>) {
+export function makeBodyParser<Meta, Schema>(spec: Spec<Meta, Schema>) {
 	if (!(spec.validate && spec.validate.type)) return null
 
 	switch (spec.validate.type) {
@@ -108,8 +113,8 @@ function captureError(ctx: Context, type: string, err: any) {
  * @api private
  */
 
-export function makeValidator<Schema>(
-	spec: Spec<Schema>,
+export function makeValidator<Meta, Schema>(
+	spec: Spec<Meta, Schema>,
 	validatorBuilder: ValidatorBuilder<Schema>
 ): Middleware {
 	const inputProps = ['header', 'query', 'params', 'body'] as const

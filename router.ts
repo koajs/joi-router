@@ -5,8 +5,8 @@ import createDebug from 'debug'
 
 const debug = createDebug('koa-joi-router')
 
-export class Router<Schema> {
-	public routes: Spec<Schema>[] = []
+export class Router<Meta, Schema> {
+	public routes: Spec<Meta, Schema>[] = []
 	public router = new KoaRouter()
 
 	constructor(
@@ -55,7 +55,7 @@ export class Router<Schema> {
 	 * @return {Router} self
 	 * @api public
 	 */
-	public route(spec: Spec<Schema>) {
+	public route(spec: Spec<Meta, Schema>) {
 		if (Array.isArray(spec)) {
 			for (let i = 0; i < spec.length; i++) {
 				this.addRoute(spec[i])
@@ -75,7 +75,7 @@ export class Router<Schema> {
 	 * @api private
 	 */
 
-	private addRoute(spec: Spec<Schema>) {
+	private addRoute(spec: Spec<Meta, Schema>) {
 		this.routes.push(spec)
 
 		debug('add %s "%s"', spec.method, spec.path)
