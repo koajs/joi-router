@@ -37,7 +37,15 @@ export interface Config<Meta, Schema> {
 }
 
 export interface Spec<Meta, Schema> extends Config<Meta, Schema> {
-	method: 'get' | 'put' | 'post' | 'patch' | 'delete' | 'del'
+	method:
+		| 'get'
+		| 'put'
+		| 'post'
+		| 'patch'
+		| 'delete'
+		| 'del'
+		| 'options'
+		| 'head'
 	path: string | RegExp
 	handler: Handler
 }
