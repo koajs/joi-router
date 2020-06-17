@@ -55,7 +55,7 @@ export class Router<Meta, Schema> {
 	 * @return {Router} self
 	 * @api public
 	 */
-	public route(spec: Spec<Meta, Schema>) {
+	public route(spec: Spec<Meta, Schema> | Spec<Meta, Schema>[]) {
 		if (Array.isArray(spec)) {
 			for (let i = 0; i < spec.length; i++) {
 				this.addRoute(spec[i])
