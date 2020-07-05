@@ -20,6 +20,29 @@ function test(app) {
   return request(http.createServer(app.callback()));
 }
 
+class CustomError extends Error {
+  constructor(status, msg) {
+    super();
+    this.status = status;
+    this.msg = msg;
+  }
+}
+
+async function errorHandler(ctx, next) {
+  try {
+    await next();
+  } catch (error) {
+    let status = 400;
+    let msg = 'unknown';
+    if (error instanceof CustomError) {
+      status = error.status;
+      msg = error.msg;
+    }
+    ctx.status = status;
+    ctx.body = msg;
+  }
+}
+
 describe('koa-joi-router', () => {
   it('exposes a function', (done) => {
     assert.equal('function', typeof router);
@@ -428,6 +451,39 @@ describe('koa-joi-router', () => {
               .expect(200)
               .expect('expected json', done);
             });
+
+            describe('and an error is thrown in route', () => {
+              it('does not catch it', (done) => {
+                const r = router();
+  
+                r.route({
+                  method: 'post',
+                  path: '/',
+                  validate: {
+                    type: 'json',
+                    continueOnError: true
+                  },
+                  handler: (ctx) => {
+                    if (ctx.invalid) {
+                      throw new CustomError(200, ctx.invalid.type.msg);
+                    }
+                  }
+                });
+  
+                const app = new Koa();
+                app.use(errorHandler);
+                app.use(r.middleware());
+  
+                test(app)
+                .post('/')
+                .type('form')
+                .send({
+                  name: 'Pebble'
+                })
+                .expect(200)
+                .expect('expected json', done);
+              });
+            });
           });
         });
 
@@ -691,6 +747,7 @@ describe('koa-joi-router', () => {
                   part.resume();
                 }
 
+                // eslint-disable-next-line require-atomic-updates
                 ctx.body = {
                   color: ctx.request.parts.field.color,
                   file: filename
@@ -1186,6 +1243,40 @@ describe('koa-joi-router', () => {
             .send({ name: 'Pebble' })
             .expect(200)
             .expect('true', done);
+          });
+
+          describe('and an error is thrown in route', () => {
+            it('does not catch it', (done) => {
+              const r = router();
+
+              r.route({
+                method: 'post',
+                path: '/',
+                validate: {
+                  type: 'json',
+                  continueOnError: true,
+                  body: {
+                    name: Joi.string().min(10)
+                  }
+                },
+                handler: (ctx) => {
+                  if (ctx.invalid) {
+                    const msg = ctx.invalid.body && ctx.invalid.body.msg;
+                    throw new CustomError(200, msg);
+                  }
+                }
+              });
+  
+              const app = new Koa();
+              app.use(errorHandler);
+              app.use(r.middleware());
+  
+              test(app)
+              .post('/')
+              .send({ name: 'Pixel' })
+              .expect(200)
+              .expect('child "name" fails because ["name" length must be at least 10 characters long]', done);
+            });
           });
         });
 
@@ -2082,6 +2173,7 @@ describe('koa-joi-router', () => {
       const users = { '2': 'aaron' };
 
       r.param('user', async (id, ctx, next) => {
+        // eslint-disable-next-line no-undef
         ctx.user = await Promise.resolve(users[id]);
 
         if (!ctx.user) {

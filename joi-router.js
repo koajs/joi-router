@@ -278,15 +278,14 @@ async function noopMiddleware(ctx, next) {
 function wrapError(spec, parsePayload) {
   return async function errorHandler(ctx, next) {
     try {
-      await parsePayload(ctx, next);
+      await parsePayload(ctx);
     } catch (err) {
       captureError(ctx, 'type', err);
-      if (spec.validate.continueOnError) {
-        return await next();
-      } else {
+      if (!spec.validate.continueOnError) {
         return ctx.throw(err);
       }
     }
+    await next();
   };
 }
 
@@ -304,14 +303,13 @@ function makeJSONBodyParser(spec) {
     opts.limit = spec.validate.maxBody;
   }
 
-  return async function parseJSONPayload(ctx, next) {
+  return async function parseJSONPayload(ctx) {
     if (!ctx.request.is('json')) {
       return ctx.throw(400, 'expected json');
     }
 
     // eslint-disable-next-line require-atomic-updates
     ctx.request.body = ctx.request.body || await parse.json(ctx, opts);
-    await next();
   };
 }
 
@@ -328,14 +326,13 @@ function makeFormBodyParser(spec) {
   if (typeof opts.limit === 'undefined') {
     opts.limit = spec.validate.maxBody;
   }
-  return async function parseFormBody(ctx, next) {
+  return async function parseFormBody(ctx) {
     if (!ctx.request.is('urlencoded')) {
       return ctx.throw(400, 'expected x-www-form-urlencoded');
     }
 
     // eslint-disable-next-line require-atomic-updates
     ctx.request.body = ctx.request.body || await parse.form(ctx, opts);
-    await next();
   };
 }
 
@@ -352,12 +349,11 @@ function makeMultipartParser(spec) {
   if (typeof opts.autoFields === 'undefined') {
     opts.autoFields = true;
   }
-  return async function parseMultipart(ctx, next) {
+  return async function parseMultipart(ctx) {
     if (!ctx.request.is('multipart/*')) {
       return ctx.throw(400, 'expected multipart');
     }
     ctx.request.parts = busboy(ctx, opts);
-    await next();
   };
 }
 
