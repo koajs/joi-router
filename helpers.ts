@@ -5,6 +5,7 @@ import {
 	IValidateObject,
 	IValidationError,
 	Validator,
+	ContextExtension,
 } from './types'
 import { Middleware } from '@koa/router'
 import { Context } from 'koa'
@@ -91,6 +92,15 @@ export function makeBodyParser<Meta, Schema>(spec: Spec<Meta, Schema>) {
 		case 'multipart':
 		default:
 			throw new Error(`unsupported body type: ${spec.validate.type}`)
+	}
+}
+
+export function injectSpec<Meta, Schema>(
+	spec: Spec<Meta, Schema>
+): Middleware<any, ContextExtension<Meta, Schema>> {
+	return async (ctx, next) => {
+		ctx.spec = spec
+		await next()
 	}
 }
 

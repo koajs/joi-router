@@ -1,4 +1,9 @@
-import { identityValidator, makeBodyParser, makeValidator } from './helpers'
+import {
+	identityValidator,
+	makeBodyParser,
+	makeValidator,
+	injectSpec,
+} from './helpers'
 import KoaRouter from '@koa/router'
 import { Spec, ValidatorBuilder } from './types'
 import createDebug from 'debug'
@@ -90,6 +95,7 @@ export class Router<Meta, Schema> {
 			: [spec.handler]
 
 		const args = [
+			injectSpec(spec),
 			...(preHandlers ?? []),
 			bodyParser,
 			validator,

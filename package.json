@@ -13,7 +13,7 @@
 		"validation"
 	],
 	"scripts": {
-		"prepublish": "npm run build",
+		"prepublish": "npm run build; npm test",
 		"build": "tsc",
 		"test": "npm run build && npm run test-cov && npm run prettier",
 		"prettier": "prettier --write *.ts",

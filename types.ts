@@ -67,3 +67,7 @@ export interface IRange {
 	lower: number
 	upper: number
 }
+
+export interface ContextExtension<Meta, Schema> {
+	spec: Spec<Meta, Schema>
+}

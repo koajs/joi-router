@@ -1365,4 +1365,28 @@ describe('koa-validator-router', () => {
 			await test(app).get('/user/2').expect('hello aaron').expect(200)
 		})
 	})
+
+	describe('access to the spec', () => {
+		it('route spec should be accessible from the context', async () => {
+			const app = new Koa()
+			const r = router()
+
+			const spec = {
+				method: 'get',
+				path: '/user/:user',
+				handler: (ctx) => {
+					assert(ctx.spec, 'spec is not present')
+					assert(ctx.spec === spec, 'spec is not correct')
+
+					ctx.status = 204
+				},
+			}
+
+			r.route(spec)
+
+			app.use(r.middleware())
+
+			await test(app).get('/user/1').expect(204)
+		})
+	})
 })
