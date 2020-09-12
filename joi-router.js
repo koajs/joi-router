@@ -8,7 +8,7 @@ const methods = require('methods');
 const KoaRouter = require('@koa/router');
 const busboy = require('await-busboy');
 const parse = require('co-body');
-const Joi = require('@hapi/joi');
+const Joi = require('joi');
 const slice = require('sliced');
 const delegate = require('delegates');
 const clone = require('clone');
@@ -416,11 +416,20 @@ function makeValidator(spec) {
       const prop = props[i];
 
       if (spec.validate[prop]) {
-        err = validateInput(prop, ctx, spec.validate);
-
-        if (err) {
-          captureError(ctx, prop, err);
-          if (!spec.validate.continueOnError) return ctx.throw(err);
+        if (spec.validate[prop] instanceof Joi.constructor && typeof (spec.validate[prop]['validate']||null) === 'function') {
+          err = validateInput(prop, null, ctx, spec.validate);
+          if (err) {
+            captureError(ctx, prop, err);
+            if (!spec.validate.continueOnError) return ctx.throw(err);
+          }
+        } else {
+          for (let field of Object.keys(spec.validate[prop])) {
+            err = validateInput(prop, field, ctx, spec.validate);
+            if (err) {
+              captureError(ctx, prop, err);
+              if (!spec.validate.continueOnError) return ctx.throw(err);
+            }
+          }
         }
       }
     }
@@ -474,11 +483,15 @@ async function prepareRequest(ctx, next) {
  * @api private
  */
 
-function validateInput(prop, ctx, validate) {
-  debug('validating %s', prop);
-
+function validateInput(prop, field, ctx, validate) {
+  debug('validating %s : %s', prop, field);
   const request = ctx.request;
-  const res = Joi.validate(request[prop], validate[prop]);
+  let res;
+  if (validate[prop] instanceof Joi.constructor && typeof (validate[prop]['validate']||null) === 'function') {
+    res = validate[prop].validate(request[prop], (validate.validateOptions || {}));
+  } else {
+    res = validate[prop][field].validate(request[prop][field], (validate.validateOptions || {}));
+  }
 
   if (res.error) {
     res.error.status = validate.failure;
@@ -489,15 +502,20 @@ function validateInput(prop, ctx, validate) {
   switch (prop) {
     case 'header': // request.header is getter only, cannot set it
     case 'query': // setting request.query directly causes casting back to strings
-      Object.keys(res.value).forEach((key) => {
+      Object.keys(res.value||{}).forEach((key) => {
         request[prop][key] = res.value[key];
       });
       break;
-    case 'params':
-      request.params = ctx.params = res.value;
+    case 'body':
+      request[prop][field] = res.value;
       break;
-    default:
-      request[prop] = res.value;
+    case 'params':
+      if (field !== null) {
+        request.params[field] = ctx.params[field] = res.value;
+      } else {
+        request.params = ctx.params = res.value;
+      }
+      break;
   }
 }
 

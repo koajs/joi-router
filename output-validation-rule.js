@@ -1,7 +1,7 @@
 'use strict';
 
 const assert = require('assert');
-const Joi = require('@hapi/joi');
+const Joi = require('joi');
 const helpMsg = ' -> see: https://github.com/koajs/joi-router/#validating-output';
 
 module.exports = OutputValidationRule;
@@ -70,17 +70,35 @@ OutputValidationRule.prototype.validateOutput = function validateOutput(ctx) {
   let result;
 
   if (this.spec.headers) {
-    result = Joi.validate(ctx.response.headers, this.spec.headers);
-    if (result.error) return result.error;
-    // use casted values
-    ctx.set(result.value);
+    if (this.spec.headers instanceof Joi.constructor && typeof (this.spec.headers['validate']||null) === 'function') {
+      result = this.spec.headers.validate(ctx.response.headers);
+      if (result.error) return result.error;
+      // use casted values
+      ctx.set(result.value);
+    } else {
+      for (let key of Object.keys(this.spec.headers)) {
+        result = this.spec.headers[key].validate(ctx.response.headers[key]);
+        if (result.error) return result.error;
+        // use casted values
+        ctx.body[key] = result.value;
+      }
+    }
   }
 
   if (this.spec.body) {
-    result = Joi.validate(ctx.body, this.spec.body);
-    if (result.error) return result.error;
-    // use casted values
-    ctx.body = result.value;
+    if (this.spec.body instanceof Joi.constructor && typeof (this.spec.body['validate']||null) === 'function') {
+      result = this.spec.body.validate(ctx.response.body);
+      if (result.error) return result.error;
+      // use casted values
+      ctx.body = result.value;
+    } else {
+      for (let key of Object.keys(this.spec.body)) {
+        result = this.spec.body[key].validate(ctx.response.body[key]);
+        if (result.error) return result.error;
+        // use casted values
+        ctx.body[key] = result.value;
+      }
+    }
   }
 };
 
