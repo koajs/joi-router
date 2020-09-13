@@ -1,15 +1,10 @@
-sudo: false
 language: node_js
 node_js:
-  - 8
-matrix:
-  include:
-    - node_js: "9.0"
-      env: "NVM_NODEJS_ORG_MIRROR=https://nodejs.org/download/nightly"
-  allow_failures:
-    # Allow the nightly installs to fail
-    - env: "NVM_NODEJS_ORG_MIRROR=https://nodejs.org/download/nightly"
-script: "npm test"
+  - 10
+  - 12
+  - 14
+script: 
+  - npm ci
 after_script:
-  - "npm i codecov"
-  - "./node_modules/.bin/codecov"
+  - npm i codecov
+  - ./node_modules/.bin/codecov
