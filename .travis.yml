@@ -4,7 +4,7 @@ node_js:
   - 12
   - 14
 script: 
-  - npm ci
+  - npm run ci
 after_script:
   - npm i codecov
   - ./node_modules/.bin/codecov
