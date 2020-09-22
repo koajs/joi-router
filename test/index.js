@@ -108,6 +108,40 @@ describe('koa-validator-router', () => {
 
 	describe('request.body', () => {
 		describe('when expected type is', () => {
+			describe('undefined', () => {
+				it('should throw an error when body validator is present', () => {
+					const r = router()
+
+					assert.throws(
+						() =>
+							r.route({
+								method: 'post',
+								path: '/',
+								handler: () => {},
+								validate: {
+									body: Joi.object({
+										foo: Joi.string(),
+									}),
+								},
+							}),
+						/Body type is not present/
+					)
+				})
+
+				it('should do nothing when', () => {
+					const r = router()
+
+					assert.doesNotThrow(() =>
+						r.route({
+							method: 'post',
+							path: '/',
+							handler: () => {},
+							validate: {},
+						})
+					)
+				})
+			})
+
 			describe('json', () => {
 				describe('and valid json is sent', () => {
 					it('is parsed as json', (done) => {

@@ -82,7 +82,13 @@ function makeJSONBodyParser<Meta, Schema>(
  */
 
 export function makeBodyParser<Meta, Schema>(spec: Spec<Meta, Schema>) {
-	if (!(spec.validate && spec.validate.type)) return null
+	if (!spec.validate) return null
+
+	if (!spec.validate.type && spec.validate.body) {
+		throw new Error(
+			`Body type is not present in the 'validate' field. Possible values are: 'json'`
+		)
+	}
 
 	switch (spec.validate.type) {
 		case 'json':
@@ -91,7 +97,7 @@ export function makeBodyParser<Meta, Schema>(spec: Spec<Meta, Schema>) {
 		case 'stream':
 		case 'multipart':
 		default:
-			throw new Error(`unsupported body type: ${spec.validate.type}`)
+			return null
 	}
 }
 
