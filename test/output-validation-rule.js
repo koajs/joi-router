@@ -1,7 +1,7 @@
 'use strict';
 
 const Rule = require('../output-validation-rule');
-const Joi = require('@hapi/joi');
+const Joi = require('joi');
 const assert = require('assert');
 
 describe('OutputValidationRule', () => {
