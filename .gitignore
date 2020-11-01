@@ -1,5 +1,19 @@
-*.sw*
-node_modules/
+
+#       OS        #
+###################
 .DS_Store
+.idea
+Thumbs.db
+tmp
+temp
+
+
+#     Node.js     #
+###################
+node_modules
+
+
+#       NYC       #
+###################
 coverage
-.idea/
+.nyc_output
