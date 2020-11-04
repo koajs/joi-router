@@ -1275,11 +1275,10 @@ describe('koa-joi-router', () => {
               .post('/')
               .send({ name: 'Pixel' })
               .expect(200)
-              .expect('child "name" fails because ["name" length must be at least 10 characters long]', done);
+              .expect('"name" length must be at least 10 characters long', done);
             });
           });
         });
-
       });
     });
 
