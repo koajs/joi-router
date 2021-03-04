@@ -210,7 +210,7 @@ public.route(routes);
      - `autoFields`: Determines whether form fields should be auto-parsed (default: `true`). See the [await-busboy docs](https://github.com/aheckmann/await-busboy#parts--parsestream-options).
   - `output`: see [output validation](#validating-output)
   - `continueOnError`: if validation fails, this flags determines if `koa-joi-router` should [continue processing](#handling-errors) the middleware stack or stop and respond with an error immediately. useful when you want your route to handle the error response. default `false`
-- `handler`: **required** async function or function
+- `handler`: **required** async function or functions
 - `pre`: async function or function, will be called before parser and validators
 - `meta`: meta data about this route. `koa-joi-router` ignores this but stores it along with all other route data
 
