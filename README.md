@@ -254,7 +254,7 @@ users.get('/:id', handler);
 // GET /users/3 -> 404
 // GET /3 -> 200
 
-users.prefix('/user');
+users.prefix('/users');
 // GET /users/3 -> 200
 // GET /3 -> 404
 ```
