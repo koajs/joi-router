@@ -211,7 +211,7 @@ public.route(routes);
   - `output`: see [output validation](#validating-output)
   - `continueOnError`: if validation fails, this flags determines if `koa-joi-router` should [continue processing](#handling-errors) the middleware stack or stop and respond with an error immediately. useful when you want your route to handle the error response. default `false`
   - `validateOptions`: options for Joi validate. default `{}`
-- `handler`: **required** async function or function
+- `handler`: **required** async function or functions
 - `pre`: async function or function, will be called before parser and validators
 - `meta`: meta data about this route. `koa-joi-router` ignores this but stores it along with all other route data
 
@@ -255,7 +255,7 @@ users.get('/:id', handler);
 // GET /users/3 -> 404
 // GET /3 -> 200
 
-users.prefix('/user');
+users.prefix('/users');
 // GET /users/3 -> 200
 // GET /3 -> 404
 ```
