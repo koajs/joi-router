@@ -99,7 +99,7 @@ The design is such that you construct multiple router instances, one for
 each section of your application which you then add as koa middleware.
 
 ```js
-const koa = require("koa")
+const Koa = require("koa")
 const router = require('koa-joi-router');
 
 const pub = router();
@@ -111,7 +111,7 @@ pub.get('/some/path', async () => {});
 admin.get('/admin', async () => {});
 auth.post('/auth', async () => {});
 
-const app = new koa();
+const app = new Koa();
 app.use(pub.middleware());
 app.use(admin.middleware());
 app.use(auth.middleware());
