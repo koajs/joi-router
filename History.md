@@ -1,3 +1,17 @@
+8.0.0 / 2021-04-26
+==================
+
+- https://github.com/koajs/joi-router/compare/9fa16b6b1..0aa5c45de5
+- major bump of @koa/router from 8 to 10 - https://github.com/koajs/router/pull/77/files
+  - impact: `router.get('*', ....)` becomes `router.get('(.*)') ....)`
+
+7.0.0 / 2019-12-07
+==================
+
+- https://github.com/koajs/joi-router/compare/91f0a42e24c4..9fa16b6b1
+- major bump @hapi/joi@15 -> joi@17
+  - impact: changes validation error messaging. example: https://github.com/koajs/joi-router/commit/fad66d8acbb51a5ddeb5b961b0d5d3cb9646bf65
+
 6.0.1 / 2019-12-07
 ==================
 
