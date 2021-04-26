@@ -18,7 +18,7 @@
     "ci": "rimraf .nyc_output && npm run lint && npm run test-cov"
   },
   "engines": {
-    "node": ">= 10"
+    "node": ">= 12"
   },
   "author": "Aaron Heckmann <aaron.heckmann+github@gmail.com>",
   "license": "MIT",
