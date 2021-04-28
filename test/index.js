@@ -1,7 +1,7 @@
 'use strict';
 
-const router = require('../');
 const Koa = require('koa');
+const KoaJoiRouter = require('..');
 const assert = require('assert');
 const request = require('supertest');
 const http = require('http');
@@ -45,24 +45,24 @@ async function errorHandler(ctx, next) {
 
 describe('koa-joi-router', () => {
   it('exposes a function', (done) => {
-    assert.equal('function', typeof router);
+    assert.equal('function', typeof KoaJoiRouter);
     done();
   });
 
   it('is a constructor', (done) => {
-    const r = router();
-    assert(r instanceof router);
+    const r = new KoaJoiRouter();
+    assert(r instanceof KoaJoiRouter);
     done();
   });
 
   it('exposes the Joi module', (done) => {
-    assert.equal(router.Joi, Joi);
+    assert.equal(KoaJoiRouter.Joi, Joi);
     done();
   });
 
   describe('routes', () => {
     it('is an array', (done) => {
-      const r = router();
+      const r = new KoaJoiRouter();
       assert(Array.isArray(r.routes), 'expected .routes to be an Array');
       done();
     });
@@ -71,7 +71,7 @@ describe('koa-joi-router', () => {
   describe('route()', () => {
     describe('spec argument', () => {
       it('is required', (done) => {
-        const r = router();
+        const r = new KoaJoiRouter();
 
         assert.throws(() => {
           r.route();
@@ -83,9 +83,9 @@ describe('koa-joi-router', () => {
       describe('must contain', () => {
         it('path', (done) => {
           assert.throws(() => {
-            router().route({
+            new KoaJoiRouter().route({
               method: [],
-              handler: () => {}
+              handler: () => { }
             });
           }, /invalid route path/);
           done();
@@ -93,17 +93,17 @@ describe('koa-joi-router', () => {
 
         it('at least one method', (done) => {
           assert.throws(() => {
-            router().route({
+            new KoaJoiRouter().route({
               path: '/',
-              handler: () => {}
+              handler: () => { }
             });
           }, /missing route method/);
 
           assert.throws(() => {
-            router().route({
+            new KoaJoiRouter().route({
               path: '/',
               method: [],
-              handler: () => {}
+              handler: () => { }
             });
           }, /missing route method/);
 
@@ -112,22 +112,33 @@ describe('koa-joi-router', () => {
 
         it('handler', (done) => {
           assert.throws(() => {
-            router().route({
+            new KoaJoiRouter().route({
               method: ['get'],
               path: '/'
             });
           }, /route handler/);
           done();
         });
+
+        it('handler as generator function', (done) => {
+          assert.throws(() => {
+            new KoaJoiRouter().route({
+              method: ['get'],
+              path: '/',
+              handler: function* () { }
+            });
+          }, /must not be GeneratorFunctions/);
+          done();
+        });
       });
 
       describe('when defining validate', () => {
         it('honors the failure code specified', (done) => {
-          const r = router();
+          const r = new KoaJoiRouter();
           r.route({
             path: '/',
             method: 'get',
-            handler: () => {},
+            handler: () => { },
             validate: {
               failure: 404
             }
@@ -151,8 +162,8 @@ describe('koa-joi-router', () => {
             [['del', {}], 0]
           ];
 
-          const r = router();
-          const fn = () => {};
+          const r = new KoaJoiRouter();
+          const fn = () => { };
 
           tests.forEach((test) => {
             const method = test[1] === 0 ?
@@ -174,8 +185,8 @@ describe('koa-joi-router', () => {
 
       describe('path', () => {
         it('can be a string', (done) => {
-          const r = router();
-          const fn = () => {};
+          const r = new KoaJoiRouter();
+          const fn = () => { };
 
           assert.doesNotThrow(() => {
             r.get('/', fn);
@@ -187,7 +198,7 @@ describe('koa-joi-router', () => {
 
       describe('pre', () => {
         it('should run before validators and handler', async () => {
-          const r = router();
+          const r = new KoaJoiRouter();
 
           r.route({
             method: 'post',
@@ -212,14 +223,14 @@ describe('koa-joi-router', () => {
 
           return test(makeRouterApp(r))
             .post('/')
-            .send({v: '42'})
+            .send({ v: '42' })
             .expect({ v: 42 });
         });
       });
 
       describe('handler', () => {
         function testHandler(handler, expectedBody, done) {
-          const r = router();
+          const r = new KoaJoiRouter();
 
           r.route({
             method: 'get',
@@ -262,13 +273,13 @@ describe('koa-joi-router', () => {
     });
 
     it('adds route to the routes array', (done) => {
-      const r = router();
+      const r = new KoaJoiRouter();
       assert.equal(0, r.routes.length);
 
       r.route({
         method: 'put',
         path: '/asdf/:id',
-        handler: () => {}
+        handler: () => { }
       });
 
       assert.equal(1, r.routes.length);
@@ -276,19 +287,19 @@ describe('koa-joi-router', () => {
     });
 
     it('adds routes to the routes array', (done) => {
-      const r = router();
+      const r = new KoaJoiRouter();
       assert.equal(0, r.routes.length);
 
       r.route([
         {
           method: 'put',
           path: '/asdf/:id',
-          handler: () => {}
+          handler: () => { }
         },
         {
           method: 'get',
           path: '/asdf/:id',
-          handler: () => {}
+          handler: () => { }
         }
       ]);
 
@@ -297,7 +308,7 @@ describe('koa-joi-router', () => {
     });
 
     it('exposes the route definition to the handler context', (done) => {
-      const r = router();
+      const r = new KoaJoiRouter();
 
       r.route({
         method: 'GET',
@@ -342,7 +353,7 @@ describe('koa-joi-router', () => {
 
   describe('request.params', () => {
     it('are defined based off of the route definition', (done) => {
-      const r = router();
+      const r = new KoaJoiRouter();
 
       r.route({
         method: 'get',
@@ -368,7 +379,7 @@ describe('koa-joi-router', () => {
       describe('json', () => {
         describe('and valid json is sent', () => {
           it('is parsed as json', (done) => {
-            const r = router();
+            const r = new KoaJoiRouter();
 
             r.route({
               method: 'post',
@@ -386,23 +397,23 @@ describe('koa-joi-router', () => {
             const app = new Koa();
             app.use(r.middleware());
             test(app).post('/')
-            .send({
-              last: 'Heckmann',
-              first: 'Aaron'
-            })
-            .expect(200)
-            .expect('Heckmann Aaron', done);
+              .send({
+                last: 'Heckmann',
+                first: 'Aaron'
+              })
+              .expect(200)
+              .expect('Heckmann Aaron', done);
           });
         });
 
         describe('and non-json is sent', () => {
           it('fails', (done) => {
-            const r = router();
+            const r = new KoaJoiRouter();
 
             r.route({
               method: 'post',
               path: '/',
-              handler: function(ctx) {
+              handler: function (ctx) {
                 ctx.status = 204;
               },
               validate: {
@@ -414,17 +425,17 @@ describe('koa-joi-router', () => {
             app.use(r.middleware());
 
             test(app)
-            .post('/')
-            .type('form')
-            .send({
-              name: 'Pebble'
-            })
-            .expect(400, done);
+              .post('/')
+              .type('form')
+              .send({
+                name: 'Pebble'
+              })
+              .expect(400, done);
           });
 
           describe('and validate.continueOnError is true', () => {
             it('runs the route and sets ctx.invalid', (done) => {
-              const r = router();
+              const r = new KoaJoiRouter();
 
               r.route({
                 method: 'post',
@@ -443,19 +454,19 @@ describe('koa-joi-router', () => {
               app.use(r.middleware());
 
               test(app)
-              .post('/')
-              .type('form')
-              .send({
-                name: 'Pebble'
-              })
-              .expect(200)
-              .expect('expected json', done);
+                .post('/')
+                .type('form')
+                .send({
+                  name: 'Pebble'
+                })
+                .expect(200)
+                .expect('expected json', done);
             });
 
             describe('and an error is thrown in route', () => {
               it('does not catch it', (done) => {
-                const r = router();
-  
+                const r = new KoaJoiRouter();
+
                 r.route({
                   method: 'post',
                   path: '/',
@@ -469,19 +480,19 @@ describe('koa-joi-router', () => {
                     }
                   }
                 });
-  
+
                 const app = new Koa();
                 app.use(errorHandler);
                 app.use(r.middleware());
-  
+
                 test(app)
-                .post('/')
-                .type('form')
-                .send({
-                  name: 'Pebble'
-                })
-                .expect(200)
-                .expect('expected json', done);
+                  .post('/')
+                  .type('form')
+                  .send({
+                    name: 'Pebble'
+                  })
+                  .expect(200)
+                  .expect('expected json', done);
               });
             });
           });
@@ -493,7 +504,7 @@ describe('koa-joi-router', () => {
           });
 
           it('fails', (done) => {
-            const r = router();
+            const r = new KoaJoiRouter();
 
             r.route({
               method: 'post',
@@ -510,15 +521,15 @@ describe('koa-joi-router', () => {
             app.use(r.middleware());
 
             test(app)
-            .post('/')
-            .type('json')
-            .send(invalid)
-            .expect(400, done);
+              .post('/')
+              .type('json')
+              .send(invalid)
+              .expect(400, done);
           });
 
           describe('and validate.continueOnError is true', () => {
             it('runs the route and sets ctx.invalid', (done) => {
-              const r = router();
+              const r = new KoaJoiRouter();
 
               r.route({
                 method: 'post',
@@ -539,11 +550,11 @@ describe('koa-joi-router', () => {
               app.use(r.middleware());
 
               test(app)
-              .post('/')
-              .type('json')
-              .send(invalid)
-              .expect(200)
-              .expect(/^Unexpected token \{/, done);
+                .post('/')
+                .type('json')
+                .send(invalid)
+                .expect(200)
+                .expect(/^Unexpected token \{/, done);
             });
           });
         });
@@ -552,7 +563,7 @@ describe('koa-joi-router', () => {
       describe('form', () => {
         describe('and valid form data is sent', () => {
           it('is parsed as form data', (done) => {
-            const r = router();
+            const r = new KoaJoiRouter();
 
             r.route({
               method: 'post',
@@ -571,21 +582,21 @@ describe('koa-joi-router', () => {
             app.use(r.middleware());
 
             test(app)
-            .post('/')
-            .send({
-              last: 'Heckmann',
-              first: 'Aaron'
-            })
-            .type('form')
-            .expect(200)
-            .expect('Heckmann Aaron')
-            .end(done);
+              .post('/')
+              .send({
+                last: 'Heckmann',
+                first: 'Aaron'
+              })
+              .type('form')
+              .expect(200)
+              .expect('Heckmann Aaron')
+              .end(done);
           });
         });
 
         describe('and non-form data is sent', () => {
           it('fails', (done) => {
-            const r = router();
+            const r = new KoaJoiRouter();
 
             r.route({
               method: 'post',
@@ -602,18 +613,18 @@ describe('koa-joi-router', () => {
             app.use(r.middleware());
 
             test(app)
-            .post('/')
-            .send({
-              last: 'heckmann',
-              first: 'aaron'
-            })
-            .type('json')
-            .expect(400, done);
+              .post('/')
+              .send({
+                last: 'heckmann',
+                first: 'aaron'
+              })
+              .type('json')
+              .expect(400, done);
           });
 
           describe('and validate.continueOnError is true', () => {
             it('runs the route and sets ctx.invalid', (done) => {
-              const r = router();
+              const r = new KoaJoiRouter();
 
               r.route({
                 method: 'post',
@@ -632,21 +643,21 @@ describe('koa-joi-router', () => {
               app.use(r.middleware());
 
               test(app)
-              .post('/')
-              .send({
-                last: 'Heckmann',
-                first: 'Aaron'
-              })
-              .type('json')
-              .expect(200)
-              .expect('expected x-www-form-urlencoded', done);
+                .post('/')
+                .send({
+                  last: 'Heckmann',
+                  first: 'Aaron'
+                })
+                .type('json')
+                .expect(200)
+                .expect('expected x-www-form-urlencoded', done);
             });
           });
         });
 
         describe('and invalid form data is sent', () => {
           it('fails', (done) => {
-            const r = router();
+            const r = new KoaJoiRouter();
 
             r.route({
               method: 'post',
@@ -663,13 +674,13 @@ describe('koa-joi-router', () => {
             app.use(r.middleware());
 
             test(app)
-            .post('/')
-            .expect(400, done);
+              .post('/')
+              .expect(400, done);
           });
 
           describe('and validate.continueOnError is true', () => {
             it('runs the route and sets ctx.invalid', (done) => {
-              const r = router();
+              const r = new KoaJoiRouter();
 
               r.route({
                 method: 'post',
@@ -688,9 +699,9 @@ describe('koa-joi-router', () => {
               app.use(r.middleware());
 
               test(app)
-              .post('/')
-              .expect(200)
-              .expect('expected x-www-form-urlencoded', done);
+                .post('/')
+                .expect(200)
+                .expect('expected x-www-form-urlencoded', done);
             });
           });
         });
@@ -698,7 +709,7 @@ describe('koa-joi-router', () => {
 
       describe('multipart', () => {
         it('is undefined', (done) => {
-          const r = router();
+          const r = new KoaJoiRouter();
 
           r.route({
             method: 'put',
@@ -721,9 +732,9 @@ describe('koa-joi-router', () => {
           b.fill('a');
 
           test(app)
-          .put('/')
-          .attach('file1', b)
-          .expect(200, done);
+            .put('/')
+            .attach('file1', b)
+            .expect(200, done);
         });
       });
     });
@@ -734,7 +745,7 @@ describe('koa-joi-router', () => {
       'stream multipart'.split(' ').forEach((type) => {
         describe(`"${type}"`, () => {
           it('is a co-busboy object', (done) => {
-            const r = router();
+            const r = new KoaJoiRouter();
 
             r.route({
               method: 'put',
@@ -762,17 +773,17 @@ describe('koa-joi-router', () => {
             app.use(r.middleware());
 
             test(app)
-            .put('/')
-            .attach('file1', `${__dirname}/fixtures/koa.png`)
-            .field('color', 'green')
-            .expect('{"color":"green","file":"koa.png"}', done);
+              .put('/')
+              .attach('file1', `${__dirname}/fixtures/koa.png`)
+              .field('color', 'green')
+              .expect('{"color":"green","file":"koa.png"}', done);
           });
         });
       });
 
       describe('not specified', () => {
         it('is undefined', (done) => {
-          const r = router();
+          const r = new KoaJoiRouter();
 
           r.route({
             method: 'put',
@@ -792,9 +803,9 @@ describe('koa-joi-router', () => {
           b.fill('a');
 
           test(app)
-          .put('/')
-          .attach('file1', b)
-          .expect(200, done);
+            .put('/')
+            .attach('file1', b)
+            .expect(200, done);
         });
       });
     });
@@ -803,7 +814,7 @@ describe('koa-joi-router', () => {
   describe('validation', () => {
     describe('of querystring', () => {
       describe('with', () => {
-        const r = router();
+        const r = new KoaJoiRouter();
 
         r.route({
           method: 'get',
@@ -826,47 +837,47 @@ describe('koa-joi-router', () => {
 
         it('missing querystring', (done) => {
           test(app).get('/a')
-          .expect(400, done);
+            .expect(400, done);
         });
 
         it('invalid q and invalid s', (done) => {
           test(app).get('/a?q=100&s=asdfhjkl')
-          .expect(400, done);
+            .expect(400, done);
         });
 
         it('invalid q and valid s', (done) => {
           test(app).get('/a?q=4&s=asdfgh')
-          .expect(400, done);
+            .expect(400, done);
         });
 
         it('valid q and invalid s', (done) => {
           test(app).get('/a?q=5&s=dfgh')
-          .expect(400, done);
+            .expect(400, done);
         });
 
         it('valid q and valid s', (done) => {
           test(app).get('/a?q=5&s=as9fgh')
-          .end((err, res) => {
-            if (err) return done(err);
-            assert.equal(5, res.body.q);
-            assert.equal('as9fgh', res.body.s);
-            done(err);
-          });
+            .end((err, res) => {
+              if (err) return done(err);
+              assert.equal(5, res.body.q);
+              assert.equal('as9fgh', res.body.s);
+              done(err);
+            });
         });
 
         it('valid q and valid s + unspecified values', (done) => {
           test(app).get('/a?q=5&s=as9fgh&sort=10')
-          .end((err, res) => {
-            assert.equal(5, res.body.q);
-            assert.equal('as9fgh', res.body.s);
-            assert.equal(10, res.body.sort);
-            done(err);
-          });
+            .end((err, res) => {
+              assert.equal(5, res.body.q);
+              assert.equal('as9fgh', res.body.s);
+              assert.equal(10, res.body.sort);
+              done(err);
+            });
         });
       });
 
       it('retains the casted values in the route (gh-6, gh-21)', (done) => {
-        const r = router();
+        const r = new KoaJoiRouter();
 
         r.route({
           method: 'get',
@@ -899,19 +910,19 @@ describe('koa-joi-router', () => {
         app.use(r.middleware());
 
         test(app).get('/a?d=7-27-2016&n=34&b=true')
-        .end((err, res) => {
-          assert.equal('object', res.body.date.type);
-          assert.equal(true, res.body.date.instance);
-          assert.equal('number', res.body.number.type);
-          assert.equal('boolean', res.body.bool.type);
-          done(err);
-        });
+          .end((err, res) => {
+            assert.equal('object', res.body.date.type);
+            assert.equal(true, res.body.date.instance);
+            assert.equal('number', res.body.number.type);
+            assert.equal('boolean', res.body.bool.type);
+            done(err);
+          });
       });
     });
 
     describe('of params', () => {
       describe('when using regex captures', () => {
-        const r = router();
+        const r = new KoaJoiRouter();
 
         r.route({
           method: 'get',
@@ -932,22 +943,22 @@ describe('koa-joi-router', () => {
 
         it('with invalid first match', (done) => {
           test(app).get('/id/2-9')
-          .expect(400, done);
+            .expect(400, done);
         });
 
         it('with invalid second match', (done) => {
           test(app).get('/id/7-1001')
-          .expect(400, done);
+            .expect(400, done);
         });
 
         it('with valid matches', (done) => {
           test(app).get('/id/7-1000')
-          .expect(200, done);
+            .expect(200, done);
         });
       });
 
       describe('with', () => {
-        const r = router();
+        const r = new KoaJoiRouter();
 
         r.route({
           method: 'get',
@@ -968,35 +979,35 @@ describe('koa-joi-router', () => {
 
         it('invalid quantity and invalid sku', (done) => {
           test(app).get('/a/as/asdfgh')
-          .expect(400, done);
+            .expect(400, done);
         });
 
         it('invalid quantity and valid sku', (done) => {
           test(app).get('/a/4/asdfgh')
-          .expect(400, done);
+            .expect(400, done);
         });
 
         it('valid quantity and invalid sku', (done) => {
           test(app).get('/a/5/dfgh')
-          .expect(400, done);
+            .expect(400, done);
         });
 
         it('valid quantity and valid sku', (done) => {
           test(app).get('/a/5/as9fgh')
-          .expect(200)
-          .expect('Content-Type', /json/)
-          .set('Accept', 'application/json')
-          .end((err, res) => {
-            if (err) return done(err);
-            assert.equal(5, res.body.quantity);
-            assert.equal('as9fgh', res.body.sku);
-            done(err);
-          });
+            .expect(200)
+            .expect('Content-Type', /json/)
+            .set('Accept', 'application/json')
+            .end((err, res) => {
+              if (err) return done(err);
+              assert.equal(5, res.body.quantity);
+              assert.equal('as9fgh', res.body.sku);
+              done(err);
+            });
         });
       });
 
       it('retains the casted values in the route', (done) => {
-        const r = router();
+        const r = new KoaJoiRouter();
 
         r.route({
           method: 'get',
@@ -1009,7 +1020,7 @@ describe('koa-joi-router', () => {
               field: Joi.any()
             })
           },
-          handler: async function(ctx) {
+          handler: async function (ctx) {
             const params = ctx.request.params.field === 'request' ?
               ctx.request.params :
               ctx.params;
@@ -1034,27 +1045,27 @@ describe('koa-joi-router', () => {
         app.use(r.middleware());
 
         test(app).get('/request/7-27-2016/34/true')
-        .end((err, res) => {
-          if (err) return done(err);
-          assert.equal('object', res.body.date.type);
-          assert.equal(true, res.body.date.instance);
-          assert.equal('number', res.body.number.type);
-          assert.equal('boolean', res.body.bool.type);
-
-          test(app).get('/params/7-27-2016/34/true')
           .end((err, res) => {
+            if (err) return done(err);
             assert.equal('object', res.body.date.type);
             assert.equal(true, res.body.date.instance);
             assert.equal('number', res.body.number.type);
             assert.equal('boolean', res.body.bool.type);
-            done(err);
+
+            test(app).get('/params/7-27-2016/34/true')
+              .end((err, res) => {
+                assert.equal('object', res.body.date.type);
+                assert.equal(true, res.body.date.instance);
+                assert.equal('number', res.body.number.type);
+                assert.equal('boolean', res.body.bool.type);
+                done(err);
+              });
           });
-        });
       });
     });
 
     describe('of headers', () => {
-      const r = router();
+      const r = new KoaJoiRouter();
 
       r.route({
         method: 'post',
@@ -1101,7 +1112,7 @@ describe('koa-joi-router', () => {
           Object.keys(tests).forEach((name) => {
             describe('with ' + name, () => {
               it(tests[name] ? 'works' : 'fails', (done) => {
-                const r = router();
+                const r = new KoaJoiRouter();
 
                 const method = tests[name] ?
                   assert.doesNotThrow :
@@ -1111,7 +1122,7 @@ describe('koa-joi-router', () => {
                   r.route({
                     method: 'post',
                     path: '/',
-                    handler: () => {},
+                    handler: () => { },
                     validate: {
                       body: Joi.object({ name: Joi.string() }),
                       type: name
@@ -1127,13 +1138,13 @@ describe('koa-joi-router', () => {
 
         describe('is not specified', () => {
           it('fails', (done) => {
-            const r = router();
+            const r = new KoaJoiRouter();
 
             assert.throws(() => {
               r.route({
                 method: 'post',
                 path: '/',
-                handler: () => {},
+                handler: () => { },
                 validate: {
                   body: Joi.object({ name: Joi.string() })
                 }
@@ -1146,7 +1157,7 @@ describe('koa-joi-router', () => {
       });
 
       describe('with', () => {
-        const r = router();
+        const r = new KoaJoiRouter();
 
         r.route({
           method: 'post',
@@ -1172,52 +1183,52 @@ describe('koa-joi-router', () => {
 
         it('invalid number and valid string', (done) => {
           test(app).post('/a/b')
-          .send({
-            quantity: 4,
-            sku: 'x'
-          })
-          .expect(400, done);
+            .send({
+              quantity: 4,
+              sku: 'x'
+            })
+            .expect(400, done);
         });
 
         it('valid number and invalid string', (done) => {
           test(app).post('/a/b')
-          .send({
-            quantity: 6,
-            sku: { x: 'test' }
-          })
-          .expect(400, done);
+            .send({
+              quantity: 6,
+              sku: { x: 'test' }
+            })
+            .expect(400, done);
         });
 
         it('valid number and missing non-required string', (done) => {
           test(app).post('/a/b')
-          .send({ quantity: 6 })
-          .expect(200, done);
+            .send({ quantity: 6 })
+            .expect(200, done);
         });
 
         it('valid values', (done) => {
           test(app).post('/a/b')
-          .send({
-            quantity: 6,
-            sku: 'x'
-          })
-          .expect(200, done);
+            .send({
+              quantity: 6,
+              sku: 'x'
+            })
+            .expect(200, done);
         });
 
         it('valid values + unspecified values', (done) => {
           test(app).post('/a/b')
-          .send({
-            quantity: 6,
-            sku: 'x',
-            a: 1
-          })
-          .expect(400, done);
+            .send({
+              quantity: 6,
+              sku: 'x',
+              a: 1
+            })
+            .expect(400, done);
         });
       });
 
       describe('when invalid data is submitted', () => {
         describe('and validate.continueOnError is true', () => {
           it('runs the route and sets ctx.invalid', (done) => {
-            const r = router();
+            const r = new KoaJoiRouter();
 
             r.route({
               method: 'post',
@@ -1239,15 +1250,15 @@ describe('koa-joi-router', () => {
             app.use(r.middleware());
 
             test(app)
-            .post('/')
-            .send({ name: 'Pebble' })
-            .expect(200)
-            .expect('true', done);
+              .post('/')
+              .send({ name: 'Pebble' })
+              .expect(200)
+              .expect('true', done);
           });
 
           describe('and an error is thrown in route', () => {
             it('does not catch it', (done) => {
-              const r = router();
+              const r = new KoaJoiRouter();
 
               r.route({
                 method: 'post',
@@ -1266,25 +1277,26 @@ describe('koa-joi-router', () => {
                   }
                 }
               });
-  
+
               const app = new Koa();
               app.use(errorHandler);
               app.use(r.middleware());
-  
+
               test(app)
-              .post('/')
-              .send({ name: 'Pixel' })
-              .expect(200)
-              .expect('"name" length must be at least 10 characters long', done);
+                .post('/')
+                .send({ name: 'Pixel' })
+                .expect(200)
+                .expect('"name" length must be at least 10 characters long', done);
             });
           });
         });
       });
+
     });
 
     describe('of parts (uploads)', () => {
       it('works', (done) => {
-        const r = router();
+        const r = new KoaJoiRouter();
 
         r.route({
           method: 'post',
@@ -1307,8 +1319,8 @@ describe('koa-joi-router', () => {
           b.fill('a');
 
           test(app).post('/')
-          .attach('file1', b)
-          .expect(200, done);
+            .attach('file1', b)
+            .expect(200, done);
         });
       });
     });
@@ -1316,7 +1328,7 @@ describe('koa-joi-router', () => {
     describe('of output', () => {
       describe('status code patterns', () => {
         it('allows single status codes', () => {
-          const r = router();
+          const r = new KoaJoiRouter();
           assert.doesNotThrow(() => {
             r.route({
               method: 'get',
@@ -1326,13 +1338,13 @@ describe('koa-joi-router', () => {
                   '200': { body: Joi.any().equal('asdr') }
                 }
               },
-              handler: () => {}
+              handler: () => { }
             });
           });
         });
 
         it('allows commas', () => {
-          const r = router();
+          const r = new KoaJoiRouter();
           assert.doesNotThrow(() => {
             r.route({
               method: 'get',
@@ -1342,13 +1354,13 @@ describe('koa-joi-router', () => {
                   '201,202': { body: Joi.any().equal('band-reject') }
                 }
               },
-              handler: () => {}
+              handler: () => { }
             });
           });
         });
 
         it('allows spaces between status codes', () => {
-          const r = router();
+          const r = new KoaJoiRouter();
           assert.doesNotThrow(() => {
             r.route({
               method: 'post',
@@ -1358,13 +1370,13 @@ describe('koa-joi-router', () => {
                   '400, 401': { body: Joi.any().equal('low-pass') }
                 }
               },
-              handler: () => {}
+              handler: () => { }
             });
           });
         });
 
         it('allows ranges', () => {
-          const r = router();
+          const r = new KoaJoiRouter();
           assert.doesNotThrow(() => {
             r.route({
               method: 'post',
@@ -1374,13 +1386,13 @@ describe('koa-joi-router', () => {
                   '402-404': { body: Joi.any().equal('hi-pass') }
                 }
               },
-              handler: () => {}
+              handler: () => { }
             });
           });
         });
 
         it('allows combinations of integers, commas and ranges', async () => {
-          const r = router();
+          const r = new KoaJoiRouter();
 
           assert.doesNotThrow(() => {
             r.route({
@@ -1391,7 +1403,7 @@ describe('koa-joi-router', () => {
                   '500-502, 504 ,506-510,201': { body: Joi.any().equal('band-pass') }
                 }
               },
-              handler: function(ctx) {
+              handler: function (ctx) {
                 ctx.status = parseInt(ctx.params.status, 10);
 
                 if (ctx.params.status === '200') {
@@ -1416,7 +1428,7 @@ describe('koa-joi-router', () => {
         });
 
         it('allows the "*" to represent all status codes', async () => {
-          const r = router();
+          const r = new KoaJoiRouter();
 
           assert.doesNotThrow(() => {
             r.route({
@@ -1427,7 +1439,7 @@ describe('koa-joi-router', () => {
                   '*': { body: Joi.any().equal('all') }
                 }
               },
-              handler: function(ctx) {
+              handler: function (ctx) {
                 ctx.status = 201;
                 ctx.body = 'all';
               }
@@ -1459,7 +1471,7 @@ describe('koa-joi-router', () => {
 
           tests.forEach((test) => {
             it(test.pattern, (done) => {
-              const r = router();
+              const r = new KoaJoiRouter();
               const output = {};
               output[test.pattern] = { body: Joi.string() };
 
@@ -1468,7 +1480,7 @@ describe('koa-joi-router', () => {
                   method: 'get',
                   path: '/invalid',
                   validate: { output: output },
-                  handler: () => {}
+                  handler: () => { }
                 });
               });
 
@@ -1478,7 +1490,7 @@ describe('koa-joi-router', () => {
         });
 
         it('throws on non-digit, comma, dash or space', () => {
-          const r = router();
+          const r = new KoaJoiRouter();
           assert.throws(() => {
             r.route({
               method: 'get',
@@ -1488,13 +1500,13 @@ describe('koa-joi-router', () => {
                   '%': { body: Joi.string() }
                 }
               },
-              handler: () => {}
+              handler: () => { }
             });
           });
         });
 
         it('throws if any status code patterns overlap', () => {
-          const r = router();
+          const r = new KoaJoiRouter();
 
           assert.throws(() => {
             r.route({
@@ -1594,7 +1606,7 @@ describe('koa-joi-router', () => {
         });
 
         it('does not throw if status code patterns do not overlap', () => {
-          const r = router();
+          const r = new KoaJoiRouter();
           assert.doesNotThrow(() => {
             r.route({
               method: 'get',
@@ -1606,7 +1618,7 @@ describe('koa-joi-router', () => {
                   '203-599': { body: Joi.any().equal('all') }
                 }
               },
-              handler: () => {}
+              handler: () => { }
             });
           });
         });
@@ -1614,7 +1626,7 @@ describe('koa-joi-router', () => {
 
       describe('fields', () => {
         it('throws when neither body nor headers is specified', () => {
-          const r = router();
+          const r = new KoaJoiRouter();
           assert.throws(() => {
             r.route({
               method: 'get',
@@ -1622,13 +1634,13 @@ describe('koa-joi-router', () => {
               validate: {
                 output: { '200': {} }
               },
-              handler: () => {}
+              handler: () => { }
             });
           });
         });
 
         it('does not throw if headers is specified but not body', () => {
-          const r = router();
+          const r = new KoaJoiRouter();
           assert.doesNotThrow(() => {
             r.route({
               method: 'get',
@@ -1638,13 +1650,13 @@ describe('koa-joi-router', () => {
                   '200': { headers: { x: Joi.any() } }
                 }
               },
-              handler: () => {}
+              handler: () => { }
             });
           });
         });
 
         it('does not throw if body is specified but not headers', () => {
-          const r = router();
+          const r = new KoaJoiRouter();
           assert.doesNotThrow(() => {
             r.route({
               method: 'get',
@@ -1654,7 +1666,7 @@ describe('koa-joi-router', () => {
                   '200': { body: { x: Joi.any() } }
                 }
               },
-              handler: () => {}
+              handler: () => { }
             });
           });
         });
@@ -1662,7 +1674,7 @@ describe('koa-joi-router', () => {
 
       describe('body,', () => {
         describe('when specified,', () => {
-          const r = router();
+          const r = new KoaJoiRouter();
 
           r.route({
             method: 'post',
@@ -1732,7 +1744,7 @@ describe('koa-joi-router', () => {
         });
 
         describe('when not specified,', () => {
-          const r = router();
+          const r = new KoaJoiRouter();
 
           r.route({
             method: 'post',
@@ -1760,7 +1772,7 @@ describe('koa-joi-router', () => {
         });
 
         describe('when specified', () => {
-          const r = router();
+          const r = new KoaJoiRouter();
 
           r.route({
             method: 'post',
@@ -1831,7 +1843,7 @@ describe('koa-joi-router', () => {
         });
 
         describe('when not specified', () => {
-          const r = router();
+          const r = new KoaJoiRouter();
 
           r.route({
             method: 'post',
@@ -1853,7 +1865,7 @@ describe('koa-joi-router', () => {
       });
 
       it('does not occur when no status code matches', async () => {
-        const r = router();
+        const r = new KoaJoiRouter();
 
         r.route({
           method: 'post',
@@ -1890,7 +1902,7 @@ describe('koa-joi-router', () => {
             };
           }
 
-          const r = router();
+          const r = new KoaJoiRouter();
           r.route({
             path: '/',
             method: ['post', 'put'],
@@ -1918,7 +1930,7 @@ describe('koa-joi-router', () => {
 
     describe('methods', () => {
       function makeMethodRouter(method, path) {
-        const r = router();
+        const r = new KoaJoiRouter();
         r[method].apply(r, slice(arguments, 1));
         assert.equal(1, r.routes.length);
 
@@ -1955,7 +1967,7 @@ describe('koa-joi-router', () => {
       }
 
       it('exist', (done) => {
-        const r = router();
+        const r = new KoaJoiRouter();
         methods.forEach((method) => {
           assert.equal('function', typeof r[method], 'missing method: ' + method);
         });
@@ -2037,7 +2049,7 @@ describe('koa-joi-router', () => {
   describe('use()', () => {
     describe('applies middleware in the order it was added', () => {
       it('can apply middleware before routes', async () => {
-        const r = router();
+        const r = new KoaJoiRouter();
         let middlewareRanFirst = false;
 
         r.use(async (ctx, next) => {
@@ -2053,12 +2065,12 @@ describe('koa-joi-router', () => {
         app.use(r.middleware());
 
         await test(app).get('/test')
-        .expect('true')
-        .expect(200);
+          .expect('true')
+          .expect(200);
       });
 
       it('can apply middleware after routes', async () => {
-        const r = router();
+        const r = new KoaJoiRouter();
         let middlewareRanFirst = false;
 
         r.get('/test', (ctx) => {
@@ -2074,14 +2086,14 @@ describe('koa-joi-router', () => {
         app.use(r.middleware());
 
         await test(app).get('/test')
-        .expect('false')
-        .expect(200);
+          .expect('false')
+          .expect(200);
       });
     });
 
     describe('accepts an optional path', () => {
       it('which applies middleware only to that path', async () => {
-        const r = router();
+        const r = new KoaJoiRouter();
         let middlewareRan = false;
 
         r.use('/nada', async (ctx, next) => {
@@ -2100,12 +2112,12 @@ describe('koa-joi-router', () => {
         app.use(r.middleware());
 
         await test(app).get('/test')
-        .expect('false')
-        .expect(200);
+          .expect('false')
+          .expect(200);
 
         await test(app).get('/nada')
-        .expect('true')
-        .expect(200);
+          .expect('true')
+          .expect(200);
       });
     });
   });
@@ -2115,7 +2127,7 @@ describe('koa-joi-router', () => {
       const app = new Koa();
       app.context.msg = 'fail';
 
-      const r = router();
+      const r = new KoaJoiRouter();
 
       r.use(async (ctx, next) => {
         ctx.msg = 'works';
@@ -2141,34 +2153,34 @@ describe('koa-joi-router', () => {
       app.use(r.middleware());
 
       await test(app).get('/')
-      .expect(404);
+        .expect(404);
 
       await test(app).get('/user')
-      .expect('works')
-      .expect(200);
+        .expect('works')
+        .expect(200);
 
       await test(app).get('/user/')
-      .expect('works')
-      .expect(200);
+        .expect('works')
+        .expect(200);
 
       await test(app).get('/user/itworks')
-      .expect('itworks')
-      .expect(200);
+        .expect('itworks')
+        .expect(200);
 
       await test(app).get('/user/itworks/')
-      .expect('itworks')
-      .expect(200);
+        .expect('itworks')
+        .expect(200);
 
       await test(app).get('/user/testparam/dude')
-      .expect('itworksdude')
-      .expect(200);
+        .expect('itworksdude')
+        .expect(200);
     });
   });
 
   describe('param()', () => {
     it('defines middleware for named route params', async () => {
       const app = new Koa();
-      const r = router();
+      const r = new KoaJoiRouter();
       const users = { '2': 'aaron' };
 
       r.param('user', async (id, ctx, next) => {
@@ -2190,11 +2202,11 @@ describe('koa-joi-router', () => {
       app.use(r.middleware());
 
       await test(app).get('/user/1')
-      .expect(404);
+        .expect(404);
 
       await test(app).get('/user/2')
-      .expect('hello aaron')
-      .expect(200);
+        .expect('hello aaron')
+        .expect(200);
     });
 
   });
