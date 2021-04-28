@@ -24,7 +24,7 @@ Easy, rich and fully validated [koa][] routing.
 [await-busboy]: https://github.com/aheckmann/await-busboy
 [joi]: https://github.com/hapijs/joi
 [@koa/router]: https://github.com/koajs/router
-[generate API documentation]: https://github.com/a-s-o/koa-docs
+[generate api documentation]: https://github.com/a-s-o/koa-docs
 [path-to-regexp]: https://github.com/pillarjs/path-to-regexp
 
 #### Features:
@@ -46,46 +46,46 @@ Easy, rich and fully validated [koa][] routing.
 
 #### Node compatibility
 
-NodeJS `>= 12` is required.
+Node.js `>= 12` is required.
 
 #### Example
 
 ```js
-const koa = require('koa');
-const router = require('koa-joi-router');
-const Joi = router.Joi;
+const Koa = require("koa");
+const KoaJoiRouter = require("koa-joi-router");
+const Joi = KoaJoiRouter.Joi;
 
-const public = router();
+const public = new KoaJoiRouter();
 
-public.get('/', async (ctx) => {
-  ctx.body = 'hello joi-router!';
+public.get("/", async (ctx) => {
+  ctx.body = "hello joi-router!";
 });
 
 public.route({
-  method: 'post',
-  path: '/signup',
+  method: "post",
+  path: "/signup",
   validate: {
     body: {
       name: Joi.string().max(100),
       email: Joi.string().lowercase().email(),
       password: Joi.string().max(100),
-      _csrf: Joi.string().token()
+      _csrf: Joi.string().token(),
     },
-    type: 'form',
+    type: "form",
     output: {
       200: {
         body: {
           userId: Joi.string(),
-          name: Joi.string()
-        }
-      }
-    }
+          name: Joi.string(),
+        },
+      },
+    },
   },
   handler: async (ctx) => {
     const user = await createUser(ctx.request.body);
     ctx.status = 201;
     ctx.body = user;
-  }
+  },
 });
 
 const app = new koa();
@@ -94,22 +94,23 @@ app.listen(3000);
 ```
 
 ## Usage
-`koa-joi-router` returns a constructor which you use to define your routes.
+
+`koa-joi-router` returns a class which you use to define your routes.
 The design is such that you construct multiple router instances, one for
 each section of your application which you then add as koa middleware.
 
 ```js
-const Koa = require("koa")
-const router = require('koa-joi-router');
+const Koa = require("koa");
+const KoaJoiRouter = require("koa-joi-router");
 
-const pub = router();
-const admin = router();
-const auth = router();
+const pub = new KoaJoiRouter();
+const admin = new KoaJoiRouter();
+const auth = new KoaJoiRouter();
 
 // add some routes ..
-pub.get('/some/path', async () => {});
-admin.get('/admin', async () => {});
-auth.post('/auth', async () => {});
+pub.get("/some/path", async () => {});
+admin.get("/admin", async () => {});
+auth.post("/auth", async () => {});
 
 const app = new Koa();
 app.use(pub.middleware());
@@ -127,9 +128,9 @@ to avoid bugs related to passing an object created with a different
 release of Joi into the router.
 
 ```js
-const koa = require('koa');
-const router = require('koa-joi-router');
-const Joi = router.Joi;
+const Koa = require("koa");
+const KoaJoiRouter = require("koa-joi-router");
+const Joi = KoaJoiRouter.Joi;
 ```
 
 ## Router instance methods
@@ -140,22 +141,22 @@ Adds a new route to the router. `route()` accepts an object or array of objects
 describing route behavior.
 
 ```js
-const router = require('koa-joi-router');
-const public = router();
+const KoaJoiRouter = require("koa-joi-router");
+const public = new KoaJoiRouter();
 
 public.route({
-  method: 'post',
-  path: '/signup',
+  method: "post",
+  path: "/signup",
   validate: {
     header: joiObject,
     query: joiObject,
     params: joiObject,
     body: joiObject,
-    maxBody: '64kb',
-    output: { '400-600': { body: joiObject } },
-    type: 'form',
+    maxBody: "64kb",
+    output: { "400-600": { body: joiObject } },
+    type: "form",
     failure: 400,
-    continueOnError: false
+    continueOnError: false,
   },
   pre: async (ctx, next) => {
     await checkAuth(ctx);
@@ -165,27 +166,27 @@ public.route({
     await createUser(ctx.request.body);
     ctx.status = 201;
   },
-  meta: { 'this': { is: 'stored internally with the route definition' }}
+  meta: { this: { is: "stored internally with the route definition" } },
 });
 ```
 
 or
 
 ```js
-const router = require('koa-joi-router');
-const public = router();
+const KoaJoiRouter = require("koa-joi-router");
+const public = new KoaJoiRouter();
 
 const routes = [
   {
-    method: 'post',
-    path: '/users',
-    handler: async (ctx) => {}
+    method: "post",
+    path: "/users",
+    handler: async (ctx) => {},
   },
   {
-    method: 'get',
-    path: '/users',
-    handler: async (ctx) => {}
-  }
+    method: "get",
+    path: "/users",
+    handler: async (ctx) => {},
+  },
 ];
 
 public.route(routes);
@@ -206,8 +207,8 @@ public.route(routes);
   - `formOptions`: options for co-body form parsing when `type: 'form'`
   - `jsonOptions`: options for co-body json parsing when `type: 'json'`
   - `multipartOptions`: options for [busboy][] parsing when `type: 'multipart'`
-     - [any busboy constructor option][busboy]. eg `{ limits: { files: 1 }}`
-     - `autoFields`: Determines whether form fields should be auto-parsed (default: `true`). See the [await-busboy docs](https://github.com/aheckmann/await-busboy#parts--parsestream-options).
+    - [any busboy constructor option][busboy]. eg `{ limits: { files: 1 }}`
+    - `autoFields`: Determines whether form fields should be auto-parsed (default: `true`). See the [await-busboy docs](https://github.com/aheckmann/await-busboy#parts--parsestream-options).
   - `output`: see [output validation](#validating-output)
   - `continueOnError`: if validation fails, this flags determines if `koa-joi-router` should [continue processing](#handling-errors) the middleware stack or stop and respond with an error immediately. useful when you want your route to handle the error response. default `false`
   - `validateOptions`: options for Joi validate. default `{}`
@@ -215,32 +216,33 @@ public.route(routes);
 - `pre`: async function or function, will be called before parser and validators
 - `meta`: meta data about this route. `koa-joi-router` ignores this but stores it along with all other route data
 
-### .get(),post(),put(),delete() etc - HTTP methods
+### .get(), post(), put(), delete() ...etc - HTTP methods
 
 `koa-joi-router` supports the traditional `router.get()`, `router.post()` type APIs
 as well.
 
 ```js
-const router = require('koa-joi-router');
-const admin = router();
+const KoaJoiRouter = require("koa-joi-router");
+const admin = new KoaJoiRouter();
 
 // signature: router.method(path [, config], handler [, handler])
 
-admin.put('/thing', handler);
-admin.get('/thing', middleware, handler);
-admin.post('/thing', config, handler);
-admin.delete('/thing', config, middleware, handler);
+admin.put("/thing", handler);
+admin.get("/thing", middleware, handler);
+admin.post("/thing", config, handler);
+admin.delete("/thing", config, middleware, handler);
 ```
 
 ### .use()
+
 Middleware run in the order they are defined by .use()(or .get(), etc.) They are invoked sequentially, requests start at the first middleware and work their way "down" the middleware stack which matches Express 4 API.
 
 ```js
-const router = require('koa-joi-router');
-const users = router();
+const KoaJoiRouter = require("koa-joi-router");
+const users = new KoaJoiRouter();
 
-users.get('/:id', handler);
-users.use('/:id', runThisAfterHandler);
+users.get("/:id", handler);
+users.use("/:id", runThisAfterHandler);
 ```
 
 ### .prefix()
@@ -248,14 +250,14 @@ users.use('/:id', runThisAfterHandler);
 Defines a route prefix for all defined routes. This is handy in "mounting" scenarios.
 
 ```js
-const router = require('koa-joi-router');
-const users = router();
+const KoaJoiRouter = require("koa-joi-router");
+const users = new KoaJoiRouter();
 
-users.get('/:id', handler);
+users.get("/:id", handler);
 // GET /users/3 -> 404
 // GET /3 -> 200
 
-users.prefix('/users');
+users.prefix("/users");
 // GET /users/3 -> 200
 // GET /3 -> 404
 ```
@@ -267,22 +269,22 @@ Defines middleware for named route parameters. Useful for auto-loading or valida
 _See [@koa/router](https://github.com/koajs/router/blob/master/API.md#module_koa-router--Router+param)_
 
 ```js
-const router = require('koa-joi-router');
-const users = router();
+const KoaJoiRouter = require("koa-joi-router");
+const users = new KoaJoiRouter();
 
 const findUser = (id) => {
   // stub
-  return Promise.resolve('Cheddar');
+  return Promise.resolve("Cheddar");
 };
 
-users.param('user', async (id, ctx, next) => {
+users.param("user", async (id, ctx, next) => {
   const user = await findUser(id);
-  if (!user) return ctx.status = 404;
+  if (!user) return (ctx.status = 404);
   ctx.user = user;
   await next();
 });
 
-users.get('/users/:user', (ctx) => {
+users.get("/users/:user", (ctx) => {
   ctx.body = `Hello ${ctx.user}`;
 });
 
@@ -295,10 +297,10 @@ Generates routing middleware to be used with `koa`. If this middleware is
 never added to your `koa` application, your routes will not work.
 
 ```js
-const router = require('koa-joi-router');
-const public = router();
+const KoaJoiRouter = require("koa-joi-router");
+const public = new KoaJoiRouter();
 
-public.get('/home', homepage);
+public.get("/home", homepage);
 
 const app = koa();
 app.use(public.middleware()); // wired up
@@ -315,9 +317,10 @@ not have an affect on your running application but is available
 to meet your introspection needs.
 
 ```js
-const router = require('koa-joi-router');
-const public = router();
-public.get('/hello', async (ctx) => {
+const KoaJoiRouter = require("koa-joi-router");
+const public = new KoaJoiRouter();
+
+public.get("/hello", async (ctx) => {
   console.log(ctx.state.route);
 });
 ```
@@ -344,12 +347,12 @@ parsed request input.
 
 ```js
 admin.route({
-  method: 'post',
-  path: '/blog',
-  validate: { type: 'json' },
+  method: "post",
+  path: "/blog",
+  validate: { type: "json" },
   handler: async (ctx) => {
     console.log(ctx.request.body); // the incoming json as an object
-  }
+  },
 });
 ```
 
@@ -362,12 +365,12 @@ If successful, `ctx.request.body` will be set to the parsed request input.
 
 ```js
 admin.route({
-  method: 'post',
-  path: '/blog',
-  validate: { type: 'form' },
+  method: "post",
+  path: "/blog",
+  validate: { type: "form" },
   handler: async (ctx) => {
-    console.log(ctx.request.body) // the incoming form as an object
-  }
+    console.log(ctx.request.body); // the incoming form as an object
+  },
 });
 ```
 
@@ -388,9 +391,9 @@ If successful, `ctx.request.parts` will be set to an
 
 ```js
 admin.route({
-  method: 'post',
-  path: '/blog',
-  validate: { type: 'multipart' },
+  method: "post",
+  path: "/blog",
+  validate: { type: "multipart" },
   handler: async (ctx) => {
     const parts = ctx.request.parts;
     let part;
@@ -405,7 +408,7 @@ admin.route({
     }
 
     console.log(parts.field.name); // form data
-  }
+  },
 });
 ```
 
@@ -417,13 +420,13 @@ parse the incoming data however you see fit.
 
 ```js
 admin.route({
-  method: 'post',
-  path: '/blog',
-  validate: { },
+  method: "post",
+  path: "/blog",
+  validate: {},
   handler: async (ctx) => {
     console.log(ctx.request.body, ctx.request.parts); // undefined undefined
-  }
-})
+  },
+});
 ```
 
 ## Validating output
@@ -441,19 +444,20 @@ Let's look at some examples:
 
 ```js
 router.route({
-  method: 'post',
-  path: '/user',
+  method: "post",
+  path: "/user",
   validate: {
     output: {
-      200: { // individual status code
+      200: {
+        // individual status code
         body: {
           userId: Joi.string(),
-          name: Joi.string()
-        }
-      }
-    }
+          name: Joi.string(),
+        },
+      },
+    },
   },
-  handler: handler
+  handler: handler,
 });
 ```
 
@@ -461,19 +465,20 @@ router.route({
 
 ```js
 router.route({
-  method: 'post',
-  path: '/user',
+  method: "post",
+  path: "/user",
   validate: {
     output: {
-      '200,201': { // multiple individual status codes
+      "200,201": {
+        // multiple individual status codes
         body: {
           userId: Joi.string(),
-          name: Joi.string()
-        }
-      }
-    }
+          name: Joi.string(),
+        },
+      },
+    },
   },
-  handler: handler
+  handler: handler,
 });
 ```
 
@@ -481,19 +486,20 @@ router.route({
 
 ```js
 router.route({
-  method: 'post',
-  path: '/user',
+  method: "post",
+  path: "/user",
   validate: {
     output: {
-      '200-299': { // status code range
+      "200-299": {
+        // status code range
         body: {
           userId: Joi.string(),
-          name: Joi.string()
-        }
-      }
-    }
+          name: Joi.string(),
+        },
+      },
+    },
   },
-  handler: handler
+  handler: handler,
 });
 ```
 
@@ -503,19 +509,20 @@ You are free to mix and match ranges and individual status codes.
 
 ```js
 router.route({
-  method: 'post',
-  path: '/user',
+  method: "post",
+  path: "/user",
   validate: {
     output: {
-      '200,201,300-600': { // mix it up
+      "200,201,300-600": {
+        // mix it up
         body: {
           userId: Joi.string(),
-          name: Joi.string()
-        }
-      }
-    }
+          name: Joi.string(),
+        },
+      },
+    },
   },
-  handler: handler
+  handler: handler,
 });
 ```
 
@@ -525,30 +532,32 @@ Validating your output headers is also supported via the `headers` property:
 
 ```js
 router.route({
-  method: 'post',
-  path: '/user',
+  method: "post",
+  path: "/user",
   validate: {
     output: {
-      '200,201': {
+      "200,201": {
         body: {
           userId: Joi.string(),
-          name: Joi.string()
+          name: Joi.string(),
         },
-        headers: Joi.object({ // validate headers too
-          authorization: Joi.string().required()
+        headers: Joi.object({
+          // validate headers too
+          authorization: Joi.string().required(),
         }).options({
-          allowUnknown: true
-        })
+          allowUnknown: true,
+        }),
       },
-      '500-600': {
-        body: { // this rule only runs when a status 500 - 600 is used
+      "500-600": {
+        body: {
+          // this rule only runs when a status 500 - 600 is used
           error_code: Joi.number(),
-          error_msg: Joi.string()
-        }
-      }
-    }
+          error_msg: Joi.string(),
+        },
+      },
+    },
   },
-  handler: handler
+  handler: handler,
 });
 ```
 
@@ -561,9 +570,10 @@ This is helpful when you'd like to introspect the previous definitions and
 take action e.g. to [generate API documentation][] etc.
 
 ```js
-const router = require('koa-joi-router');
-const admin = router();
-admin.post('/thing', { validate: { type: 'multipart' }}, handler);
+const KoaJoiRouter = require("koa-joi-router");
+const admin = new KoaJoiRouter();
+
+admin.post("/thing", { validate: { type: "multipart" } }, handler);
 
 console.log(admin.routes);
 // [ { path: '/thing',
@@ -579,11 +589,15 @@ Because [path-to-regexp][]
 supports it, so do we!
 
 ```js
-const router = require('koa-joi-router');
-const admin = router();
-admin.get('/blog/:year(\\d{4})-:day(\\d{2})-:article(\\d{3})', async (ctx, next) => { 
- console.log(ctx.request.params) // { year: '2017', day: '01', article: '011' } 
-});
+const KoaJoiRouter = require("koa-joi-router");
+const admin = new KoaJoiRouter();
+
+admin.get(
+  "/blog/:year(\\d{4})-:day(\\d{2})-:article(\\d{3})",
+  async (ctx, next) => {
+    console.log(ctx.request.params); // { year: '2017', day: '01', article: '011' }
+  }
+);
 ```
 
 ## Multiple methods support
@@ -591,12 +605,13 @@ admin.get('/blog/:year(\\d{4})-:day(\\d{2})-:article(\\d{3})', async (ctx, next)
 Defining a route for multiple HTTP methods in a single shot is supported.
 
 ```js
-const router = require('koa-joi-router');
-const admin = router();
+const KoaJoiRouter = require("koa-joi-router");
+const admin = new KoaJoiRouter();
+
 admin.route({
-  path: '/',
-  method: ['POST', 'PUT'],
-  handler: fn
+  path: "/",
+  method: ["POST", "PUT"],
+  handler: fn,
 });
 ```
 
@@ -606,12 +621,13 @@ Often times you may need to add additional, route specific middleware to a
 single route.
 
 ```js
-const router = require('koa-joi-router');
-const admin = router();
+const KoaJoiRouter = require("koa-joi-router");
+const admin = new KoaJoiRouter();
+
 admin.route({
-  path: '/',
-  method: ['POST', 'PUT'],
-  handler: [ yourMiddleware, yourHandler ]
+  path: "/",
+  method: ["POST", "PUT"],
+  handler: [yourMiddleware, yourHandler],
 });
 ```
 
@@ -621,23 +637,25 @@ You may want to bundle and nest middleware in different ways for reuse and
 organization purposes.
 
 ```js
-const router = require('koa-joi-router');
-const admin = router();
-const commonMiddleware = [ yourMiddleware, someOtherMiddleware ];
+const KoaJoiRouter = require("koa-joi-router");
+const admin = new KoaJoiRouter();
+
+const commonMiddleware = [yourMiddleware, someOtherMiddleware];
 admin.route({
-  path: '/',
-  method: ['POST', 'PUT'],
-  handler: [ commonMiddleware, yourHandler ]
+  path: "/",
+  method: ["POST", "PUT"],
+  handler: [commonMiddleware, yourHandler],
 });
 ```
 
 This also works with the .get(),post(),put(),delete(), etc HTTP method helpers.
 
 ```js
-const router = require('koa-joi-router');
-const admin = router();
-const commonMiddleware = [ yourMiddleware, someOtherMiddleware ];
-admin.get('/', commonMiddleware, yourHandler);
+const KoaJoiRouter = require("koa-joi-router");
+const admin = new KoaJoiRouter();
+
+const commonMiddleware = [yourMiddleware, someOtherMiddleware];
+admin.get("/", commonMiddleware, yourHandler);
 ```
 
 ## Handling errors
@@ -650,14 +668,14 @@ flag to true. You can find out if validation failed by checking `ctx.invalid`.
 
 ```js
 admin.route({
-  method: 'post',
-  path: '/add',
+  method: "post",
+  path: "/add",
   validate: {
-    type: 'form',
+    type: "form",
     body: {
-      id: Joi.string().length(10)
+      id: Joi.string().length(10),
     },
-    continueOnError: true
+    continueOnError: true,
   },
   handler: async (ctx) => {
     if (ctx.invalid) {
@@ -668,8 +686,8 @@ admin.route({
       console.log(ctx.invalid.type);
     }
 
-    ctx.body = await render('add', { errors: ctx.invalid });
-  }
+    ctx.body = await render("add", { errors: ctx.invalid });
+  },
 });
 ```
 
