@@ -38,7 +38,6 @@
     "debug": "4.1.1",
     "delegates": "1.0.0",
     "flatten": "1.0.3",
-    "is-gen-fn": "0.0.1",
     "joi": "^17.2.1",
     "methods": "1.1.2",
     "sliced": "1.0.1"

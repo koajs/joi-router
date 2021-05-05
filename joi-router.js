@@ -2,7 +2,6 @@
 
 const assert = require('assert');
 const debug = require('debug')('koa-joi-router');
-const isGenFn = require('is-gen-fn');
 const flatten = require('flatten');
 const methods = require('methods');
 const KoaRouter = require('@koa/router');
@@ -189,8 +188,7 @@ function checkPreHandler(spec) {
 
 function isSupportedFunction(handler) {
   assert.equal('function', typeof handler, 'route handler must be a function');
-
-  if (isGenFn(handler)) {
+  if (handler && handler.constructor && handler.constructor.name === 'GeneratorFunction') {
     throw new Error(`route handlers must not be GeneratorFunctions
        Please use "async function" or "function".`);
   }

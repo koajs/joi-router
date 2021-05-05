@@ -258,6 +258,16 @@ describe('koa-joi-router', () => {
             middleware.generate()
           ], middleware.getExpectedBody(), done);
         });
+
+        it('must not be a generator function', () => {
+          assert.throws(() => {
+            router().route({
+              method: 'get',
+              path: '/',
+              handler: function* generator() {},
+              });
+          }, /handlers must not be GeneratorFunctions/);
+        });
       });
     });
 
