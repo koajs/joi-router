@@ -46,7 +46,7 @@ Easy, rich and fully validated [koa][] routing.
 
 #### Node compatibility
 
-Node.js `>= 12` is required.
+Node.js `>= 14` is required.
 
 #### Example
 
