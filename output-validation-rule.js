@@ -4,107 +4,98 @@ const assert = require('assert');
 const Joi = require('joi');
 const helpMsg = ' -> see: https://github.com/koajs/joi-router/#validating-output';
 
-module.exports = OutputValidationRule;
+class OutputValidationRule {
+  constructor(status, spec) {
+    assert(status, 'OutputValidationRule: missing status param');
+    assert(spec, 'OutputValidationRule: missing spec param');
 
-function OutputValidationRule(status, spec) {
-  assert(status, 'OutputValidationRule: missing status param');
-  assert(spec, 'OutputValidationRule: missing spec param');
+    this.ranges = status.split(',').map(trim).filter(Boolean).map(rangify);
+    assert(this.ranges.length > 0, 'invalid status code: ' + status + helpMsg);
 
-  this.ranges = status.split(',').map(trim).filter(Boolean).map(rangify);
-  assert(this.ranges.length > 0, 'invalid status code: ' + status + helpMsg);
+    this.status = status;
+    this.spec = spec;
+    this.validateSpec();
+  }
 
-  this.status = status;
-  this.spec = spec;
-  this.validateSpec();
-}
+  /**
+   * Validates it's input values
+   *
+   * @throws Error
+   */
 
-/**
- * Validates it's input values
- *
- * @throws Error
- */
+  validateSpec() {
+    assert(this.spec.body || this.spec.headers, 'output validation key: ' +
+      this.status + ' must have either a body or headers validator specified');
+  }
 
-OutputValidationRule.prototype.validateSpec = function validateSpec() {
-  assert(this.spec.body || this.spec.headers, 'output validation key: ' +
-    this.status + ' must have either a body or headers validator specified');
-};
+  toString() {
+    return this.status;
+  }
 
-OutputValidationRule.prototype.toString = function toString() {
-  return this.status;
-};
+  /**
+   * Determines if this rule has overlapping logic
+   * with `ruleB`.
+   *
+   * @returns Boolean
+   */
 
-/**
- * Determines if this rule has overlapping logic
- * with `ruleB`.
- *
- * @returns Boolean
- */
+  overlaps(ruleB) {
+    return OutputValidationRule.overlaps(this, ruleB);
+  }
 
-OutputValidationRule.prototype.overlaps = function overlaps(ruleB) {
-  return OutputValidationRule.overlaps(this, ruleB);
-};
+  /**
+   * Checks if this rule should be run against the
+   * given `ctx` response data.
+   *
+   * @returns Boolean
+   */
 
-/**
- * Checks if this rule should be run against the
- * given `ctx` response data.
- *
- * @returns Boolean
- */
+  matches(ctx) {
+    for (let i = 0; i < this.ranges.length; ++i) {
+      const range = this.ranges[i];
+      if (ctx.status >= range.lower && ctx.status <= range.upper) {
+        return true;
+      }
+    }
 
-OutputValidationRule.prototype.matches = function matches(ctx) {
-  for (let i = 0; i < this.ranges.length; ++i) {
-    const range = this.ranges[i];
-    if (ctx.status >= range.lower && ctx.status <= range.upper) {
-      return true;
+    return false;
+  }
+
+  /**
+   * Validates this rule against the given `ctx`.
+   */
+
+  validateOutput(ctx) {
+    let result;
+
+    if (this.spec.headers) {
+      result = Joi.compile(this.spec.headers).validate(ctx.response.headers);
+      if (result.error) return result.error;
+      // use casted values
+      ctx.set(result.value);
+    }
+
+    if (this.spec.body) {
+      result = Joi.compile(this.spec.body).validate(ctx.body);
+      if (result.error) return result.error;
+      // use casted values
+      ctx.body = result.value;
     }
   }
 
-  return false;
-};
-
-/**
- * Validates this rule against the given `ctx`.
- */
-
-OutputValidationRule.prototype.validateOutput = function validateOutput(ctx) {
-  let result;
-
-  if (this.spec.headers) {
-    result = Joi.compile(this.spec.headers).validate(ctx.response.headers);
-    if (result.error) return result.error;
-    // use casted values
-    ctx.set(result.value);
-  }
-
-  if (this.spec.body) {
-    result = Joi.compile(this.spec.body).validate(ctx.body);
-    if (result.error) return result.error;
-    // use casted values
-    ctx.body = result.value;
-  }
-};
-
-// static
-
-/**
- * Determines if ruleA has overlapping logic
- * with `ruleB`.
- *
- * @returns Boolean
- */
-
-OutputValidationRule.overlaps = function overlaps(a, b) {
-  /* eslint-disable prefer-arrow-callback */
-  return a.ranges.some(function checkRangeA(rangeA) {
-    return b.ranges.some(function checkRangeB(rangeB) {
-      if (rangeA.upper >= rangeB.lower && rangeA.lower <= rangeB.upper) {
-        return true;
-      }
-      return false;
+  static overlaps(a, b) {
+    /* eslint-disable prefer-arrow-callback */
+    return a.ranges.some(function checkRangeA(rangeA) {
+      return b.ranges.some(function checkRangeB(rangeB) {
+        if (rangeA.upper >= rangeB.lower && rangeA.lower <= rangeB.upper) {
+          return true;
+        }
+        return false;
+      });
     });
-  });
-  /* eslint-enable prefer-arrow-callback */
-};
+    /* eslint-enable prefer-arrow-callback */
+  }
+}
 
 // helpers
 
@@ -133,3 +124,5 @@ function validateCode(code) {
   assert(/^[1-5][0-9]{2}$/.test(code), 'invalid status code: ' + code +
     ' must be between 100-599');
 }
+
+module.exports = OutputValidationRule;

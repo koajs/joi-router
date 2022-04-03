@@ -1,9 +1,10 @@
 language: node_js
 node_js:
-  - 10
-  - 12
   - 14
-script: 
+  - 15
+  - 16
+  - 17
+script:
   - npm run ci
 after_script:
   - npm i codecov

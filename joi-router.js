@@ -1,159 +1,244 @@
+/*!
+ * koa-better-boom
+ *
+ *
+ * Copyright(c) 2021 Koa.js contributions
+ * MIT Licensed
+ */
+
 'use strict';
 
+/**
+ * Module dependencies.
+ */
 const assert = require('assert');
 const debug = require('debug')('koa-joi-router');
-const isGenFn = require('is-gen-fn');
-const flatten = require('flatten');
-const methods = require('methods');
+const isGenFn = require('is-generator-function');
+const methods = require('http').METHODS.map(method => method.toLowerCase());
 const KoaRouter = require('@koa/router');
 const busboy = require('await-busboy');
 const parse = require('co-body');
 const Joi = require('joi');
 const slice = require('sliced');
-const delegate = require('delegates');
 const clone = require('clone');
+
 const OutputValidator = require('./output-validator');
 
-module.exports = Router;
+/**
+ * Configurable, input validated routing for koa.
+ * 
+ * @api public
+ */
+class KoaJoiRouter {
+  // expose Joi for use in applications
+  static Joi = Joi;
 
-// expose Joi for use in applications
-Router.Joi = Joi;
-
-function Router() {
-  if (!(this instanceof Router)) {
-    return new Router();
+  constructor() {
+    this.routes = [];
+    this.router = new KoaRouter();
   }
 
-  this.routes = [];
-  this.router = new KoaRouter();
+  /**
+   * Return koa middleware
+   * @return {Function}
+   * @api public
+   */
+
+  middleware() {
+    return this.router.routes();
+  }
+
+  /**
+   * Adds a route or array of routes to this router, storing the route
+   * in `this.routes`.
+   *
+   * Example:
+   *
+   *   var admin = router();
+   *
+   *   admin.route({
+   *     method: 'get',
+   *     path: '/do/stuff/:id',
+   *     handler: () => {},
+   *     validate: {
+   *       header: Joi object
+   *       params: Joi object (:id)
+   *       query: Joi object (validate key/val pairs in the querystring)
+   *       body: Joi object (the request payload body) (json or form)
+   *       maxBody: '64kb' // (json, x-www-form-urlencoded only - not stream size)
+   *                       // optional
+   *       type: 'json|form|multipart' (required when body is specified)
+   *       failure: 400 // http error code to use
+   *     },
+   *     meta: { // this is ignored but useful for doc generators etc
+   *       desc: 'We can use this for docs generation.'
+   *       produces: ['application/json']
+   *       model: {} // response object definition
+   *     }
+   *   })
+   *
+   * @param {Object} spec
+   * @return {Router} self
+   * @api public
+   */
+
+  route(spec) {
+    if (Array.isArray(spec)) {
+      for (let i = 0; i < spec.length; i++) {
+        this._addRoute(spec[i]);
+      }
+    } else {
+      this._addRoute(spec);
+    }
+
+    return this;
+  }
+
+  // delegate behavoir handler.
+  // prefix method
+  prefix(prefix) {
+    return this.router.prefix(prefix)
+  }
+
+  // use method
+  use(...args) {
+    return this.router.use(...args)
+  }
+
+  // param method
+  param(param, middleware) {
+    return this.router.param(param, middleware)
+  }
+
+  /**
+   * Adds a route to this router, storing the route
+   * in `this.routes`.
+   *
+   * @param {Object} spec
+   * @api private
+   */
+
+  _addRoute(spec) {
+    this._validateRouteSpec(spec);
+    this.routes.push(spec);
+
+    debug('add %s "%s"', spec.method, spec.path);
+
+    const bodyParser = makeBodyParser(spec);
+    const specExposer = makeSpecExposer(spec);
+    const validator = makeValidator(spec);
+    const preHandlers = spec.pre ? flatten(spec.pre) : [];
+    const handlers = flatten(spec.handler);
+
+    const args = [
+      spec.path
+    ].concat(preHandlers, [
+      prepareRequest,
+      specExposer,
+      bodyParser,
+      validator
+    ], handlers);
+
+    const router = this.router;
+
+    spec.method.forEach((method) => {
+      router[method].apply(router, args);
+    });
+  }
+
+  /**
+   * Validate the spec passed to route()
+   *
+   * @param {Object} spec
+   * @api private
+   */
+
+  _validateRouteSpec(spec) {
+    assert(spec, 'missing spec');
+
+    const ok = typeof spec.path === 'string' || spec.path instanceof RegExp;
+    assert(ok, 'invalid route path');
+
+    checkHandler(spec);
+    checkPreHandler(spec);
+    checkMethods(spec);
+    checkValidators(spec);
+  }
 }
 
 /**
- * Array of routes
- *
- * Router.prototype.routes;
- * @api public
- */
-
-/**
- * Delegate methods to internal router object
- */
-
-delegate(Router.prototype, 'router')
-  .method('prefix')
-  .method('use')
-  .method('param');
-
-/**
- * Return koa middleware
- * @return {Function}
- * @api public
- */
-
-Router.prototype.middleware = function middleware() {
-  return this.router.routes();
-};
-
-/**
- * Adds a route or array of routes to this router, storing the route
- * in `this.routes`.
+ * Routing shortcuts for all HTTP methods
  *
  * Example:
  *
- *   var admin = router();
+ *    var admin = router();
  *
- *   admin.route({
- *     method: 'get',
- *     path: '/do/stuff/:id',
- *     handler: function *(next){},
- *     validate: {
- *       header: Joi object
- *       params: Joi object (:id)
- *       query: Joi object (validate key/val pairs in the querystring)
- *       body: Joi object (the request payload body) (json or form)
- *       maxBody: '64kb' // (json, x-www-form-urlencoded only - not stream size)
- *                       // optional
- *       type: 'json|form|multipart' (required when body is specified)
- *       failure: 400 // http error code to use
- *     },
- *     meta: { // this is ignored but useful for doc generators etc
- *       desc: 'We can use this for docs generation.'
- *       produces: ['application/json']
- *       model: {} // response object definition
- *     }
- *   })
+ *    admin.get('/user', async function(ctx) {
+ *      ctx.body = ctx.session.user;
+ *    })
  *
- * @param {Object} spec
- * @return {Router} self
- * @api public
+ *    var validator = Joi().object().keys({ name: Joi.string() });
+ *    var config = { validate: { body: validator }};
+ *
+ *    admin.post('/user', config, async function(ctx){
+ *      console.log(ctx.body);
+ *    })
+ *
+ *    async function commonHandler(ctx){
+ *      // ...
+ *    }
+ *    admin.post('/account', [commonHandler, async function(ctx){
+ *      // ...
+ *    }]);
+ *
+ * @param {String} path
+ * @param {Object} [config] optional
+ * @param {async function|async function[]} handler(s)
+ * @return {App} self
  */
 
-Router.prototype.route = function route(spec) {
-  if (Array.isArray(spec)) {
-    for (let i = 0; i < spec.length; i++) {
-      this._addRoute(spec[i]);
+methods.forEach((method) => {
+  method = method.toLowerCase();
+
+  KoaJoiRouter.prototype[method] = function (path) {
+    // path, handler1, handler2, ...
+    // path, config, handler1
+    // path, config, handler1, handler2, ...
+    // path, config, [handler1, handler2], handler3, ...
+
+    let fns;
+    let config;
+
+    if (typeof arguments[1] === 'function' || Array.isArray(arguments[1])) {
+      config = {};
+      fns = slice(arguments, 1);
+    } else if (typeof arguments[1] === 'object') {
+      config = arguments[1];
+      fns = slice(arguments, 2);
     }
-  } else {
-    this._addRoute(spec);
-  }
 
-  return this;
-};
+    const spec = {
+      path: path,
+      method: method,
+      handler: fns
+    };
+
+    Object.assign(spec, config);
+
+    this.route(spec);
+    return this;
+  };
+});
+
+// utils
 
 /**
- * Adds a route to this router, storing the route
- * in `this.routes`.
- *
- * @param {Object} spec
  * @api private
  */
 
-Router.prototype._addRoute = function addRoute(spec) {
-  this._validateRouteSpec(spec);
-  this.routes.push(spec);
-
-  debug('add %s "%s"', spec.method, spec.path);
-
-  const bodyParser = makeBodyParser(spec);
-  const specExposer = makeSpecExposer(spec);
-  const validator = makeValidator(spec);
-  const preHandlers = spec.pre ? flatten(spec.pre) : [];
-  const handlers = flatten(spec.handler);
-
-  const args = [
-    spec.path
-  ].concat(preHandlers, [
-    prepareRequest,
-    specExposer,
-    bodyParser,
-    validator
-  ], handlers);
-
-  const router = this.router;
-
-  spec.method.forEach((method) => {
-    router[method].apply(router, args);
-  });
-};
-
-/**
- * Validate the spec passed to route()
- *
- * @param {Object} spec
- * @api private
- */
-
-Router.prototype._validateRouteSpec = function validateRouteSpec(spec) {
-  assert(spec, 'missing spec');
-
-  const ok = typeof spec.path === 'string' || spec.path instanceof RegExp;
-  assert(ok, 'invalid route path');
-
-  checkHandler(spec);
-  checkPreHandler(spec);
-  checkMethods(spec);
-  checkValidators(spec);
-};
+function flatten(array) {
+  return array.reduce((prev, next) => prev.concat(Array.isArray(next) ? flatten(next) : next), [])
+}
 
 /**
  * @api private
@@ -188,7 +273,7 @@ function checkPreHandler(spec) {
  */
 
 function isSupportedFunction(handler) {
-  assert.equal('function', typeof handler, 'route handler must be a function');
+  assert.strictEqual('function', typeof handler, 'route handler must be a function');
 
   if (isGenFn(handler)) {
     throw new Error(`route handlers must not be GeneratorFunctions
@@ -237,7 +322,7 @@ function checkValidators(spec) {
   let text;
   if (spec.validate.body) {
     text = 'validate.type must be declared when using validate.body';
-    assert(/json|form/.test(spec.validate.type), text);
+    assert(/json|form|multipart/.test(spec.validate.type), text);
   }
 
   if (spec.validate.type) {
@@ -498,65 +583,6 @@ function validateInput(prop, ctx, validate) {
 }
 
 /**
- * Routing shortcuts for all HTTP methods
- *
- * Example:
- *
- *    var admin = router();
- *
- *    admin.get('/user', async function(ctx) {
- *      ctx.body = ctx.session.user;
- *    })
- *
- *    var validator = Joi().object().keys({ name: Joi.string() });
- *    var config = { validate: { body: validator }};
- *
- *    admin.post('/user', config, async function(ctx){
- *      console.log(ctx.body);
- *    })
- *
- *    async function commonHandler(ctx){
- *      // ...
- *    }
- *    admin.post('/account', [commonHandler, async function(ctx){
- *      // ...
- *    }]);
- *
- * @param {String} path
- * @param {Object} [config] optional
- * @param {async function|async function[]} handler(s)
- * @return {App} self
+ * Expose `KoaJoiRouter`.
  */
-
-methods.forEach((method) => {
-  method = method.toLowerCase();
-
-  Router.prototype[method] = function(path) {
-    // path, handler1, handler2, ...
-    // path, config, handler1
-    // path, config, handler1, handler2, ...
-    // path, config, [handler1, handler2], handler3, ...
-
-    let fns;
-    let config;
-
-    if (typeof arguments[1] === 'function' || Array.isArray(arguments[1])) {
-      config = {};
-      fns = slice(arguments, 1);
-    } else if (typeof arguments[1] === 'object') {
-      config = arguments[1];
-      fns = slice(arguments, 2);
-    }
-
-    const spec = {
-      path: path,
-      method: method,
-      handler: fns
-    };
-
-    Object.assign(spec, config);
-
-    this.route(spec);
-    return this;
-  };
-});
+module.exports = KoaJoiRouter

@@ -18,9 +18,19 @@
     "ci": "rimraf .nyc_output && npm run lint && npm run test-cov"
   },
   "engines": {
-    "node": ">= 12"
+    "node": ">= 14"
   },
-  "author": "Aaron Heckmann <aaron.heckmann+github@gmail.com>",
+  "author": {
+    "name": "Aaron Heckmann",
+    "email": "aaron.heckmann+github@gmail.com"
+  },
+  "contributors": [
+    {
+      "name": "Imed Jaberi",
+      "email": "imed_jebari@hotmail.fr",
+      "url": "https://www.3imed-jaberi.com/"
+    }
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -31,32 +41,31 @@
   },
   "homepage": "https://github.com/koajs/joi-router",
   "dependencies": {
-    "@koa/router": "^10.0.0",
-    "await-busboy": "1.0.3",
-    "clone": "2.1.2",
-    "co-body": "6.0.0",
-    "debug": "4.1.1",
-    "delegates": "1.0.0",
-    "flatten": "1.0.3",
-    "is-gen-fn": "0.0.1",
-    "joi": "^17.2.1",
-    "methods": "1.1.2",
-    "sliced": "1.0.1"
+    "@koa/router": "^10.1.1",
+    "await-busboy": "^1.0.3",
+    "clone": "^2.1.2",
+    "co-body": "^6.1.0",
+    "debug": "^4.3.4",
+    "is-generator-function": "^1.0.10",
+    "joi": "^17.6.0",
+    "sliced": "^1.0.1"
   },
   "devDependencies": {
-    "eslint": "^7.9.0",
-    "koa": "^2.13.0",
-    "mocha": "^8.1.3",
+    "@babel/eslint-parser": "^7.17.0",
+    "eslint": "^8.11.0",
+    "koa": "^2.13.4",
+    "mocha": "^9.2.2",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "supertest": "^4.0.2"
+    "supertest": "^6.2.2"
   },
   "eslintConfig": {
     "extends": [
       "eslint:recommended"
     ],
+    "parser": "@babel/eslint-parser",
     "parserOptions": {
-      "ecmaVersion": 2017
+      "ecmaVersion": 2020
     },
     "env": {
       "node": true
