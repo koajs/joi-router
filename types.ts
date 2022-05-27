@@ -48,6 +48,7 @@ export interface Spec<Meta, Schema> extends Config<Meta, Schema> {
 		| 'head'
 	path: string | RegExp
 	handler: Handler
+	validationEnabled?: boolean
 }
 
 export type IValidationError = any

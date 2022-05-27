@@ -86,7 +86,7 @@ export class Router<Meta, Schema> {
 		debug('add %s "%s"', spec.method, spec.path)
 
 		const bodyParser = makeBodyParser(spec)
-		const validator = makeValidator(spec, this.validatorBuilder)
+		const validator = spec.validationEnabled === false ? null : makeValidator(spec, this.validatorBuilder)
 		const preHandlers = Array.isArray(spec.pre)
 			? spec.pre.flat(Infinity)
 			: [spec.pre]
