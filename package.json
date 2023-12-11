@@ -35,7 +35,7 @@
     "await-busboy": "1.0.3",
     "clone": "2.1.2",
     "co-body": "6.0.0",
-    "debug": "4.1.1",
+    "debug": "4.3.1",
     "delegates": "1.0.0",
     "flatten": "1.0.3",
     "is-gen-fn": "0.0.1",
