@@ -31,7 +31,7 @@
   },
   "homepage": "https://github.com/koajs/joi-router",
   "dependencies": {
-    "@koa/router": "^10.0.0",
+    "@koa/router": "^11.0.2",
     "await-busboy": "1.0.3",
     "clone": "2.1.2",
     "co-body": "6.0.0",
