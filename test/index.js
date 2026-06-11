@@ -907,6 +907,35 @@ describe('koa-joi-router', () => {
           done(err);
         });
       });
+
+      it('applies query defaults when the querystring is empty (gh-62)', (done) => {
+        const r = router();
+
+        r.route({
+          method: 'get',
+          path: '/a',
+          validate: {
+            query: Joi.object().keys({
+              search: Joi.string(),
+              sort: Joi.object().default({ name: 1 })
+            })
+          },
+          handler: (ctx) => {
+            ctx.body = ctx.request.query;
+          }
+        });
+
+        const app = new Koa();
+        app.use(r.middleware());
+
+        test(app).get('/a')
+        .expect(200)
+        .end((err, res) => {
+          if (err) return done(err);
+          assert.deepEqual({ name: 1 }, res.body.sort);
+          done();
+        });
+      });
     });
 
     describe('of params', () => {
