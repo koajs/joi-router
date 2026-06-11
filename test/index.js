@@ -60,6 +60,113 @@ describe('koa-joi-router', () => {
     done();
   });
 
+  describe('.validate()', () => {
+    it('exposes a middleware factory', (done) => {
+      assert.equal('function', typeof router.validate);
+      done();
+    });
+
+    it('validates query data as route middleware', (done) => {
+      const r = router();
+
+      r.get('/a',
+        router.validate({
+          query: Joi.object().keys({
+            q: Joi.number().required()
+          })
+        }),
+        (ctx) => {
+          ctx.body = {
+            q: ctx.request.query.q,
+            type: typeof ctx.request.query.q
+          };
+        });
+
+      const app = makeRouterApp(r);
+
+      test(app).get('/a?q=5')
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        assert.equal(5, res.body.q);
+        assert.equal('number', res.body.type);
+        done();
+      });
+    });
+
+    it('accepts route config objects with validate', (done) => {
+      const r = router();
+
+      r.get('/a',
+        router.validate({
+          validate: {
+            query: Joi.object().keys({
+              q: Joi.number().required()
+            })
+          }
+        }),
+        (ctx) => {
+          ctx.body = ctx.request.query;
+        });
+
+      const app = makeRouterApp(r);
+
+      test(app).get('/a?q=6')
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        assert.equal(6, res.body.q);
+        done();
+      });
+    });
+
+    it('uses configured failure status', (done) => {
+      const r = router();
+
+      r.get('/a',
+        router.validate({
+          failure: 422,
+          query: Joi.object().keys({
+            q: Joi.number().required()
+          })
+        }),
+        (ctx) => {
+          ctx.body = 'validated';
+        });
+
+      const app = makeRouterApp(r);
+
+      test(app).get('/a?q=text')
+      .expect(422, done);
+    });
+
+    it('parses JSON body data as route middleware', (done) => {
+      const r = router();
+
+      r.post('/a',
+        router.validate({
+          type: 'json',
+          body: Joi.object().keys({
+            name: Joi.string().required()
+          })
+        }),
+        (ctx) => {
+          ctx.body = ctx.request.body;
+        });
+
+      const app = makeRouterApp(r);
+
+      test(app).post('/a')
+      .send({ name: 'Ada' })
+      .expect(200)
+      .end((err, res) => {
+        if (err) return done(err);
+        assert.equal('Ada', res.body.name);
+        done();
+      });
+    });
+  });
+
   describe('routes', () => {
     it('is an array', (done) => {
       const r = router();

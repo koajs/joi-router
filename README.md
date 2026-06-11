@@ -30,6 +30,7 @@ Easy, rich and fully validated [koa][] routing.
 #### Features:
 
 - built in input validation using [joi][]
+- exposed validation middleware factory
 - built in [output validation](#validating-output) using [joi][]
 - built in body parsing using [co-body][] and [await-busboy][]
 - built on the great [@koa/router][]
@@ -130,6 +131,39 @@ release of Joi into the router.
 const koa = require('koa');
 const router = require('koa-joi-router');
 const Joi = router.Joi;
+```
+
+### .validate(config)
+
+Returns standalone Koa middleware for the same validation configuration used by
+route definitions. This allows validation to be composed directly with other
+route middleware.
+
+```js
+const router = require('koa-joi-router');
+const Joi = router.Joi;
+
+const pub = router();
+
+pub.get('/search',
+  router.validate({
+    query: Joi.object().keys({
+      q: Joi.string().required()
+    })
+  }),
+  async (ctx) => {
+    ctx.body = ctx.request.query;
+  });
+```
+
+The factory also accepts the route config shape:
+
+```js
+router.validate({
+  validate: {
+    query: Joi.object().keys({ q: Joi.string().required() })
+  }
+});
 ```
 
 ## Router instance methods

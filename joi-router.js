@@ -19,6 +19,26 @@ module.exports = Router;
 // expose Joi for use in applications
 Router.Joi = Joi;
 
+// expose validation as standalone middleware
+Router.validate = function createValidateMiddleware(config) {
+  assert(config && typeof config === 'object', 'missing validate config');
+
+  const validate = config.validate || config;
+  const spec = { validate: Object.assign({}, validate) };
+  checkValidators(spec);
+
+  const bodyParser = makeBodyParser(spec);
+  const validator = makeValidator(spec);
+
+  return async function validateMiddleware(ctx, next) {
+    await prepareRequest(ctx, async () => {
+      await bodyParser(ctx, async () => {
+        await validator(ctx, next);
+      });
+    });
+  };
+};
+
 function Router() {
   if (!(this instanceof Router)) {
     return new Router();
